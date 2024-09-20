@@ -6,6 +6,15 @@ import os
 from dotenv import load_dotenv
 from huggingface_hub import login
 print ("Loading .env was: ", load_dotenv())
+
+def get_device() -> str:
+    # set the device
+    if torch.cuda.is_available():
+        print("CUDA AVAILABLE....")
+        torch.cuda.empty_cache()
+        return "cuda"
+    else:
+        return "cpu"
 device = get_device()
 login(os.environ.get("HF_API_TOKEN"))
 # Load the Llama 3 8B model and tokenizer from Hugging Face
@@ -24,14 +33,7 @@ def generate_cot_prompt(question):
     Let's think step by step:
     """
     return cot_prompt
-def get_device() -> str:
-    # set the device
-    if torch.cuda.is_available():
-        print("CUDA AVAILABLE....")
-        torch.cuda.empty_cache()
-        return "cuda"
-    else:
-        return "cpu"
+
 
 
 # Function to get the model's prediction
