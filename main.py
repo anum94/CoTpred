@@ -1,7 +1,8 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import load_dataset
 import torch
-
+from dotenv import load_dotenv
+print ("Loading .env was: ", load_dotenv())
 # Load the Llama 3 8B model and tokenizer from Hugging Face
 model_name = "meta-llama/Llama-2-8b-hf"  # Replace with Llama 3 model when available
 tokenizer = AutoTokenizer.from_pretrained(model_name)
