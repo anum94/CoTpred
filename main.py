@@ -1,16 +1,19 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import load_dataset
 import torch
+import os
+
 from dotenv import load_dotenv
+from huggingface_hub import login
 print ("Loading .env was: ", load_dotenv())
+login(os.environ.get("HF_API_TOKEN"))
 # Load the Llama 3 8B model and tokenizer from Hugging Face
-model_name = "meta-llama/Llama-2-8b-hf"  # Replace with Llama 3 model when available
+model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"  # Replace with Llama 3 model when available
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
 # Load the GSM8k dataset from Hugging Face
-dataset = load_dataset("gsm8k", split="test")  # Use the 'test' split
-
+dataset = load_dataset("openai/gsm8k", "main", split='test') 
 
 # Function to generate a Chain of Thought (CoT) prompt
 def generate_cot_prompt(question):
