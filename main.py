@@ -6,11 +6,12 @@ import os
 from dotenv import load_dotenv
 from huggingface_hub import login
 print ("Loading .env was: ", load_dotenv())
+device = get_device()
 login(os.environ.get("HF_API_TOKEN"))
 # Load the Llama 3 8B model and tokenizer from Hugging Face
 model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"  # Replace with Llama 3 model when available
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
 
 # Load the GSM8k dataset from Hugging Face
 dataset = load_dataset("openai/gsm8k", "main", split='test') 
@@ -23,6 +24,14 @@ def generate_cot_prompt(question):
     Let's think step by step:
     """
     return cot_prompt
+def get_device() -> str:
+    # set the device
+    if torch.cuda.is_available():
+        print("CUDA AVAILABLE....")
+        torch.cuda.empty_cache()
+        return "cuda"
+    else:
+        return "cpu"
 
 
 # Function to get the model's prediction
