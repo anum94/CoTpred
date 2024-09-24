@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import load_dataset
 import torch
 import os
+from accelerate import cpu_offload
 
 from dotenv import load_dotenv
 from huggingface_hub import login
@@ -23,6 +24,7 @@ def generate_cot_prompt(question):
     Question: {question}
     Let's think step by step:
     """
+    print (f"CoT Prompt: {cot_prompt}\n")
     return cot_prompt
 
 
@@ -32,7 +34,8 @@ def generate_answer(question):
     cot_prompt = generate_cot_prompt(question)
 
     # Tokenize the input prompt
-    inputs = tokenizer(cot_prompt, return_tensors="pt").to(device)
+    inputs = tokenizer(cot_prompt, return_tensors="pt") #.to(device)
+    #cpu_offload(model, 'gpu', offload_buffers=True)
 
     # Generate output from the model (limiting max tokens for efficiency)
     outputs = model.generate(
@@ -49,11 +52,12 @@ def generate_answer(question):
     return answer
 
 
-
+def get_gpt4_score(reference:str, prediction:str) -> Bool:
+    return True
 
 if __name__ == '__main__':
     device = get_device()
-    login(os.environ.get("HF_API_TOKEN"))
+    login(os.environ.get("HF_API_TOKEN"),add_to_git_credential = True)
 
 
     # Load the GSM8k dataset from Hugging Face
@@ -64,14 +68,17 @@ if __name__ == '__main__':
     answer = sample['answer']
 
     # Load the Llama 3 8B model and tokenizer from Hugging Face
-    model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"  # Replace with Llama 3 model when available
+    model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct" 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-                                                 torch_dtype=torch.bfloat16)  # .to(device)
+                                                 torch_dtype=torch.bfloat16) #.to(device)
     gen_answer = generate_answer(question)
 
     # Display the question and model's chain-of-thought response
     print(f"Question: {question}")
     print(f"Model's Answer with Chain of Thought:\n{gen_answer}")
     print(f"Reference Answer:\n{answer}")
+    dummy = [question, answer, gen_answer]
+
+    #decision = get_gpt4_score(reference, prediction)
 
