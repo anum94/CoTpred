@@ -2,9 +2,12 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import load_dataset
 import torch
 import os
+from tqdm import tqdm
 from accelerate import cpu_offload
-
+import sys, logging
+import pandas as pd
 from dotenv import load_dotenv
+from openai import OpenAI, BadRequestError
 from huggingface_hub import login
 print ("Loading .env was: ", load_dotenv())
 
@@ -52,8 +55,40 @@ def generate_answer(question):
     return answer
 
 
-def get_gpt4_score(reference:str, prediction:str) -> Bool:
-    return True
+def get_gpt4_score(references:str, predictions:str) -> bool:
+    outputs = []
+    num_rate_errors = 0
+    openai_client = OpenAI(api_key=os.environ.get("HF_API_TOKEN"))
+    prompts = [(
+        f"You are a Maths Teacher. You will be given the LLM answer to a Maths problem along with the correct answer. Your task is to compare the Generated Answer to the Reference Answer and output True if both answers match and False is the Generated Answer doesn't contain the correct answer as per the Reference Answer"
+        f"\n Reference Answer: {ref} \n\n Generated Answer: {pred} \n Output only True or False. Evaluation: ") for ref, pred in zip(references, predictions)]
+    for prompt in tqdm(prompts):
+        received = False
+        while not received:
+            try:
+                response = openai_client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "user", "content": prompt},
+                    ],
+                    max_tokens=10,
+                    temperature=0.2,
+                )
+                received = True
+                output = response.choices[0].message.content
+                outputs.append(output)
+
+            except:
+                outputs.append("")
+                error = sys.exc_info()[0]
+                num_rate_errors += 1
+                if error == BadRequestError:
+                    # something is wrong: e.g. prompt too long
+                    logging.critical(f"BadRequestError\nPrompt passed in:\n\n{prompt}\n\n")
+                    assert False
+                logging.error("API error: %s (%d)" % (error, num_rate_errors))
+
+    return outputs
 
 if __name__ == '__main__':
     device = get_device()
@@ -62,23 +97,27 @@ if __name__ == '__main__':
 
     # Load the GSM8k dataset from Hugging Face
     dataset = load_dataset("openai/gsm8k", "main", split='test')
-    # Test on one example from the GSM8k dataset
-    sample = dataset[0]
-    question = sample['question']
-    answer = sample['answer']
-
+    # Test on a subset from the GSM8k dataset
     # Load the Llama 3 8B model and tokenizer from Hugging Face
-    model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct" 
+    model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-                                                 torch_dtype=torch.bfloat16) #.to(device)
-    gen_answer = generate_answer(question)
+                                                 torch_dtype=torch.bfloat16)  # .to(device)
+    dummy = list()
+    for i in tqdm(range(10)):
+        sample = dataset[i]
+        question = sample['question']
+        answer = sample['answer']
 
-    # Display the question and model's chain-of-thought response
-    print(f"Question: {question}")
-    print(f"Model's Answer with Chain of Thought:\n{gen_answer}")
-    print(f"Reference Answer:\n{answer}")
-    dummy = [question, answer, gen_answer]
+        gen_answer = generate_answer(question)
+
+        # Display the question and model's chain-of-thought response
+        print(f"Question: {question}")
+        print(f"Model's Answer with Chain of Thought:\n{gen_answer}")
+        print(f"Reference Answer:\n{answer}")
+        dummy.append([question, answer, gen_answer])
+    df = pd.DataFrame(dummy, columns = ['Question', 'Reference', 'Prediction'])
+    df.to_csv("llama3_gsm8k.csv",index=False)
 
     #decision = get_gpt4_score(reference, prediction)
 
