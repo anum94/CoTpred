@@ -35,7 +35,7 @@ def generate_answer(question):
 
     # Tokenize the input prompt
     inputs = tokenizer(cot_prompt, return_tensors="pt") #.to(device)
-    #cpu_offload(model, 'gpu', offload_buffers=True)
+    #cpu_offload(model, device, offload_buffers=True)
 
     # Generate output from the model (limiting max tokens for efficiency)
     outputs = model.generate(
