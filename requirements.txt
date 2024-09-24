@@ -2,3 +2,5 @@ transformers
 datasets
 accelerate
 python-dotenv
+openai
+tqdm
