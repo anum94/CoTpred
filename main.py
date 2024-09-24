@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from openai import OpenAI, BadRequestError
 from huggingface_hub import login
 print ("Loading .env was: ", load_dotenv())
-
+n=15
 def get_device() -> str:
     # set the device
     if torch.cuda.is_available():
@@ -46,6 +46,7 @@ def generate_answer(question):
         max_length=512,  # Adjust this to limit the length of the response
         num_beams=1,  # Beam search to improve output quality
         #early_stopping=True
+        pad_token_id = tokenizer.eos_token_id,
     )
 
     # Decode the model's output
@@ -100,11 +101,14 @@ if __name__ == '__main__':
     # Test on a subset from the GSM8k dataset
     # Load the Llama 3 8B model and tokenizer from Hugging Face
     model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                  torch_dtype=torch.bfloat16)  # .to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+
     dummy = list()
-    for i in tqdm(range(10)):
+    for i in tqdm(range(n)):
         sample = dataset[i]
         question = sample['question']
         answer = sample['answer']
