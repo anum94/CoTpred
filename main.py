@@ -20,7 +20,7 @@ login(os.environ.get("HF_API_TOKEN"))
 # Load the Llama 3 8B model and tokenizer from Hugging Face
 model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"  # Replace with Llama 3 model when available
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.bfloat16) #.to(device)
 
 # Load the GSM8k dataset from Hugging Face
 dataset = load_dataset("openai/gsm8k", "main", split='test') 
@@ -41,14 +41,14 @@ def generate_answer(question):
     cot_prompt = generate_cot_prompt(question)
 
     # Tokenize the input prompt
-    inputs = tokenizer(cot_prompt, return_tensors="pt").to("cuda")
+    inputs = tokenizer(cot_prompt, return_tensors="pt").to(device)
 
     # Generate output from the model (limiting max tokens for efficiency)
     outputs = model.generate(
         **inputs,
         max_length=256,  # Adjust this to limit the length of the response
-        num_beams=5,  # Beam search to improve output quality
-        early_stopping=True
+        num_beams=1,  # Beam search to improve output quality
+        #early_stopping=True
     )
 
     # Decode the model's output
