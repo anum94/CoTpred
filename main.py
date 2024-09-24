@@ -15,15 +15,6 @@ def get_device() -> str:
         return "cuda"
     else:
         return "cpu"
-device = get_device()
-login(os.environ.get("HF_API_TOKEN"))
-# Load the Llama 3 8B model and tokenizer from Hugging Face
-model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"  # Replace with Llama 3 model when available
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.bfloat16) #.to(device)
-
-# Load the GSM8k dataset from Hugging Face
-dataset = load_dataset("openai/gsm8k", "main", split='test') 
 
 # Function to generate a Chain of Thought (CoT) prompt
 def generate_cot_prompt(question):
@@ -61,11 +52,26 @@ def generate_answer(question):
 
 
 if __name__ == '__main__':
+    device = get_device()
+    login(os.environ.get("HF_API_TOKEN"))
+
+
+    # Load the GSM8k dataset from Hugging Face
+    dataset = load_dataset("openai/gsm8k", "main", split='test')
     # Test on one example from the GSM8k dataset
     sample = dataset[0]
     question = sample['question']
-    answer = generate_answer(question)
+    answer = sample['answer']
+
+    # Load the Llama 3 8B model and tokenizer from Hugging Face
+    model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"  # Replace with Llama 3 model when available
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+                                                 torch_dtype=torch.bfloat16)  # .to(device)
+    gen_answer = generate_answer(question)
 
     # Display the question and model's chain-of-thought response
     print(f"Question: {question}")
-    print(f"Model's Answer with Chain of Thought:\n{answer}")
+    print(f"Model's Answer with Chain of Thought:\n{gen_answer}")
+    print(f"Reference Answer:\n{answer}")
+
