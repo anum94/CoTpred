@@ -1,0 +1,54 @@
+Question,Reference,Prediction
+Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?,"Janet sells 16 - 3 - 4 = <<16-3-4=9>>9 duck eggs a day.
+She makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.
+#### 18","
+    Question: Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?
+    Let's think step by step:
+     Step 1: Determine the total number of eggs laid by the ducks.
+     Step 2: Calculate the total number of eggs eaten and used for muffins.
+     Step 3: Determine the number of eggs left to sell at the market.
+     Step 4: Calculate the amount of money Janet makes by selling the remaining eggs.
+
+    Let's calculate step by step:
+
+    Step 1: Determine the total number of eggs laid by the ducks.
+    Janet’s ducks lay 16 eggs per day.
+
+    Step 2: Calculate the total number of eggs eaten and used for muffins.
+    Janet eats three eggs for breakfast and bakes muffins with four eggs. So, she uses a total of 3 + 4 = 7 eggs.
+
+    Step 3: Determine the number of eggs left to sell at the market.
+    Janet lays 16 eggs per day and uses 7 eggs for breakfast and muffins. So, she has 16 - 7 = 9 eggs left to sell.
+
+    Step 4: Calculate the amount of money Janet makes by selling the remaining eggs.
+    Janet sells the remaining 9 eggs for $2 each. So, she makes 9 x 2 = $18 per day at the farmers' market.
+
+The final answer is: $\boxed{18}$    Answer: $\boxed{18}$"
+A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?,"It takes 2/2=<<2/2=1>>1 bolt of white fiber
+So the total amount of fabric is 2+1=<<2+1=3>>3 bolts of fabric
+#### 3","
+    Question: A robe takes 2 bolts of blue fiber and half that much white fiber.  How many bolts in total does it take?
+    Let's think step by step:
+     Step 1: Determine how many bolts of blue fiber are needed. 2 bolts are needed.
+     Step 2: Determine how many bolts of white fiber are needed.  Since half that much white fiber is needed as blue fiber, we need 2 / 2 = 1 bolt of white fiber.
+     Step 3: Calculate the total number of bolts needed. 2 (blue) + 1 (white) = 3 bolts.
+    Therefore, it takes 3 bolts of fiber in total to make the robe.  The answer is 3.
+
+The final answer is: $\boxed{3}$  $ $  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$  $$ "
+"Josh decides to try flipping a house.  He buys a house for $80,000 and then puts in $50,000 in repairs.  This increased the value of the house by 150%.  How much profit did he make?","The cost of the house and repairs came out to 80,000+50,000=$<<80000+50000=130000>>130,000
+He increased the value of the house by 80,000*1.5=<<80000*1.5=120000>>120,000
+So the new value of the house is 120,000+80,000=$<<120000+80000=200000>>200,000
+So he made a profit of 200,000-130,000=$<<200000-130000=70000>>70,000
+#### 70000","
+    Question: Josh decides to try flipping a house.  He buys a house for $80,000 and then puts in $50,000 in repairs.  This increased the value of the house by 150%.  How much profit did he make?
+    Let's think step by step:
+     Step 1: Josh bought the house for $80,000.  He then put in $50,000 in repairs.  So the total cost of the house is $80,000 + $50,000 = $130,000.
+     Step 2:  The repairs increased the value of the house by 150%.  This means that the repairs increased the value of the house by 1.5 times its original value.  So the new value of the house is 1.5 times its original value.  The original value of the house was $80,000.  So the new value of the house is 1.5 x $80,000 = $120,000.
+     Step 3: Josh sold the house for $120,000.  The total cost of the house was $130,000.  So the profit he made is $120,000 - $130,000 = -$10,000.  Josh lost $10,000.
+
+The best answer is -10000.   
+
+
+
+
+The best answer is -10000."
