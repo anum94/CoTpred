@@ -56,18 +56,18 @@ def generate_answer(question):
     return answer
 
 
-def get_gpt4_score(references:str, predictions:str) -> bool:
+def get_gpt4_score(questions:list, references:list, predictions:list) -> bool:
     outputs = []
     num_rate_errors = 0
-    openai_client = OpenAI(api_key=os.environ.get("HF_API_TOKEN"))
+    openai_client = OpenAI(api_key=os.environ.get("OPENAI_KEY"))
     prompts = [(
-        f"You are a Maths Teacher. You will be given the LLM answer to a Maths problem along with the correct answer. Your task is to compare the Generated Answer to the Reference Answer and output True if both answers match and False is the Generated Answer doesn't contain the correct answer as per the Reference Answer"
-        f"\n Reference Answer: {ref} \n\n Generated Answer: {pred} \n Output only True or False. Evaluation: ") for ref, pred in zip(references, predictions)]
+        f"You are a Maths Teacher. You will be given the LLM answer to a Maths or Reasoning Question along with the correct answer. Your task is to compare the Generated Answer to the Reference Answer for the given question. "
+        f"You should output True if generated answer contains has the correct output in the end, and False is the Generated Answer doesn't contain the correct answer as per the Reference Answer"
+        f"\n Question: {ques}"
+        f"\n Reference Answer: {ref} \n\n Generated Answer: {pred} \n Output only True or False. Evaluation: ") for ques, ref, pred in zip(questions, references, predictions)]
     for prompt in tqdm(prompts):
-        received = False
-        while not received:
-            try:
-                response = openai_client.chat.completions.create(
+
+        response = openai_client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
                         {"role": "user", "content": prompt},
@@ -75,19 +75,10 @@ def get_gpt4_score(references:str, predictions:str) -> bool:
                     max_tokens=10,
                     temperature=0.2,
                 )
-                received = True
-                output = response.choices[0].message.content
-                outputs.append(output)
 
-            except:
-                outputs.append("")
-                error = sys.exc_info()[0]
-                num_rate_errors += 1
-                if error == BadRequestError:
-                    # something is wrong: e.g. prompt too long
-                    logging.critical(f"BadRequestError\nPrompt passed in:\n\n{prompt}\n\n")
-                    assert False
-                logging.error("API error: %s (%d)" % (error, num_rate_errors))
+        output = response.choices[0].message.content
+        outputs.append(output)
+
 
     return outputs
 
@@ -101,6 +92,8 @@ if __name__ == '__main__':
     # Test on a subset from the GSM8k dataset
     # Load the Llama 3 8B model and tokenizer from Hugging Face
     model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    fname = "llama3_gsm8k.csv"
+    '''
     
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                  torch_dtype=torch.bfloat16)  # .to(device)
@@ -121,7 +114,23 @@ if __name__ == '__main__':
         print(f"Reference Answer:\n{answer}")
         dummy.append([question, answer, gen_answer])
     df = pd.DataFrame(dummy, columns = ['Question', 'Reference', 'Prediction'])
-    df.to_csv("llama3_gsm8k.csv",index=False)
+    df.to_csv(fname,index=False)
+    
+    tokenizer = None
+    model = None
+    df = pd.read_csv(fname)
+    llm_decisions = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
+    llm_decisions = [bool(decisions) for decisions in llm_decisions]
+    df["llm_decisions"] = llm_decisions
+    df.to_csv(fname, index=False)
+    '''
 
-    #decision = get_gpt4_score(reference, prediction)
+    tokenizer = None
+    model = None
+    df = pd.read_csv(fname)
+    df_correct = df[df['anum_decisions'] == 1]
+    df_incorrect = df[df['anum_decisions'] == 0]
+
+
+
 
