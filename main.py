@@ -93,13 +93,13 @@ if __name__ == '__main__':
     # Load the Llama 3 8B model and tokenizer from Hugging Face
     model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     fname = "llama3_gsm8k.csv"
-    '''
-    
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-                                                 torch_dtype=torch.bfloat16)  # .to(device)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    tokenizer.pad_token_id = tokenizer.eos_token_id
 
+    
+    #model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+    #                                             torch_dtype=torch.bfloat16)  # .to(device)
+    #tokenizer = AutoTokenizer.from_pretrained(model_name)
+    #tokenizer.pad_token_id = tokenizer.eos_token_id
+    '''
     dummy = list()
     for i in tqdm(range(n)):
         sample = dataset[i]
@@ -127,9 +127,18 @@ if __name__ == '__main__':
 
     tokenizer = None
     model = None
-    df = pd.read_csv(fname)
+    fname = "llama3_gsm8k.xlsx"
+    df = pd.read_excel(fname, )
+    df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
     df_correct = df[df['anum_decisions'] == 1]
     df_incorrect = df[df['anum_decisions'] == 0]
+
+    input_sentence = df_correct['Question'].iloc[0]
+    input_prompt = generate_cot_prompt(input_sentence)
+    print (input_prompt)
+
+
+
 
 
 
