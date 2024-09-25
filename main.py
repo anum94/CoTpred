@@ -27,7 +27,7 @@ def generate_cot_prompt(question):
     Question: {question}
     Let's think step by step:
     """
-    print (f"CoT Prompt: {cot_prompt}\n")
+    #print (f"CoT Prompt: {cot_prompt}\n")
     return cot_prompt
 
 
@@ -95,10 +95,10 @@ if __name__ == '__main__':
     fname = "llama3_gsm8k.csv"
 
     
-    #model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-    #                                             torch_dtype=torch.bfloat16)  # .to(device)
-    #tokenizer = AutoTokenizer.from_pretrained(model_name)
-    #tokenizer.pad_token_id = tokenizer.eos_token_id
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+                                                 torch_dtype=torch.bfloat16, output_hidden_states=True)  # .to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer.pad_token_id = tokenizer.eos_token_id
     '''
     dummy = list()
     for i in tqdm(range(n)):
@@ -125,8 +125,8 @@ if __name__ == '__main__':
     df.to_csv(fname, index=False)
     '''
 
-    tokenizer = None
-    model = None
+    #tokenizer = None
+    #model = None
     fname = "llama3_gsm8k.xlsx"
     df = pd.read_excel(fname, )
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
@@ -136,6 +136,13 @@ if __name__ == '__main__':
     input_sentence = df_correct['Question'].iloc[0]
     input_prompt = generate_cot_prompt(input_sentence)
     print (input_prompt)
+
+    inputs = tokenizer(input_sentence, return_tensors="pt")
+    outputs = model(**inputs)
+    hidden_states = outputs.hidden_states
+    last_layer_hidden_state = hidden_states[-1]
+
+    print(last_layer_hidden_state.shape)
 
 
 
