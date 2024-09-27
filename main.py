@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-                                                 torch_dtype=torch.bfloat16, output_hidden_states=True)  # .to(device)
+                                                 torch_dtype=torch.bfloat16, output_hidden_states=True, load_in_4bit=True)  # .to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token_id = tokenizer.eos_token_id
     '''
@@ -128,6 +128,7 @@ if __name__ == '__main__':
     #tokenizer = None
     #model = None
     fname = "llama3_gsm8k.xlsx"
+    feature = None
     df = pd.read_excel(fname, )
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
     df_correct = df[df['anum_decisions'] == 1]
@@ -152,7 +153,15 @@ if __name__ == '__main__':
         #outputs = model(**inputs)
         hidden_states = outputs.hidden_states
         last_layer_hidden_state = hidden_states[-1]
+        if feature is None:
+            feature = last_layer_hidden_state
+            print (feature.size())
+        else:
+            print (feature.size(), last_layer_hidden_state.size())
+            feature = torch.concat((feature,last_layer_hidden_state),dim=0)
+
 
         print(last_layer_hidden_state.shape)
+    print (feature.size())
 
 
