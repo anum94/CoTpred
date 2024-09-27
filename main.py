@@ -3,7 +3,6 @@ from datasets import load_dataset
 import torch
 import os
 from tqdm import tqdm
-from accelerate import cpu_offload
 import sys, logging
 import pandas as pd
 from dotenv import load_dotenv
@@ -11,6 +10,7 @@ from openai import OpenAI, BadRequestError
 from huggingface_hub import login
 print ("Loading .env was: ", load_dotenv())
 n=15
+batch_size = 2
 def get_device() -> str:
     # set the device
     if torch.cuda.is_available():
@@ -21,14 +21,12 @@ def get_device() -> str:
         return "cpu"
 
 # Function to generate a Chain of Thought (CoT) prompt
-def generate_cot_prompt(question):
+def generate_cot_prompt(questions):
     # Define a basic chain-of-thought prompt format
-    cot_prompt = f"""
-    Question: {question}
-    Let's think step by step:
-    """
-    #print (f"CoT Prompt: {cot_prompt}\n")
-    return cot_prompt
+
+    cot_prompts = [f"Question: {question} \nLet's think step by step:\n" for question in questions]
+    #print (f"CoT Prompt: {cot_prompts[0}\n")
+    return cot_prompts
 
 
 
@@ -83,6 +81,8 @@ def get_gpt4_score(questions:list, references:list, predictions:list) -> bool:
     return outputs
 
 if __name__ == '__main__':
+
+
     device = get_device()
     login(os.environ.get("HF_API_TOKEN"),add_to_git_credential = True)
 
@@ -133,20 +133,26 @@ if __name__ == '__main__':
     df_correct = df[df['anum_decisions'] == 1]
     df_incorrect = df[df['anum_decisions'] == 0]
 
-    input_sentence = df_correct['Question'].iloc[0]
-    input_prompt = generate_cot_prompt(input_sentence)
-    print (input_prompt)
+    input_sentence = list(df_correct['Question'])
+    input_prompts = generate_cot_prompt(input_sentence)
 
-    inputs = tokenizer(input_sentence, return_tensors="pt")
-    outputs = model(**inputs)
-    hidden_states = outputs.hidden_states
-    last_layer_hidden_state = hidden_states[-1]
+    inputs = tokenizer(input_prompts, padding=True, truncation=True, return_tensors="pt")
 
-    print(last_layer_hidden_state.shape)
-
+    # Run forward pass with a batch size of 2
+    # Ensure inputs are divided as per batch size
+    input_ids_batches = inputs['input_ids'].split(batch_size)
+    attention_mask_batches = inputs['attention_mask'].split(batch_size)
 
 
+    # Process each batch
+    for input_ids, attention_mask in zip(input_ids_batches, attention_mask_batches):
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
 
+        #outputs = model(**inputs)
+        hidden_states = outputs.hidden_states
+        last_layer_hidden_state = hidden_states[-1]
+
+        print(last_layer_hidden_state.shape)
 
 
