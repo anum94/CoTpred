@@ -1,6 +1,7 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from datasets import load_dataset
 import torch
+import gc
 import os
 from tqdm import tqdm
 import sys, logging
@@ -14,6 +15,7 @@ from sklearn.metrics import mean_squared_error
 print ("Loading .env was: ", load_dotenv())
 n=15
 batch_size = 2
+samples = 10
 def get_device() -> str:
     # set the device
     if torch.cuda.is_available():
@@ -96,10 +98,10 @@ if __name__ == '__main__':
     # Load the Llama 3 8B model and tokenizer from Hugging Face
     model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     fname = "llama3_gsm8k.csv"
-
+    quantization_config=BitsAndBytesConfig(load_in_4bit=True)
     
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-                                                 torch_dtype=torch.bfloat16, output_hidden_states=True, load_in_4bit=True)  # .to(device)
+                                                 torch_dtype=torch.bfloat16, output_hidden_states=True, quantization_config = quantization_config)  # .to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token_id = tokenizer.eos_token_id
     '''
@@ -133,6 +135,9 @@ if __name__ == '__main__':
     fname = "llama3_gsm8k.xlsx"
     feature = None
     df = pd.read_excel(fname, )
+    print (df.columns)
+    print (df)
+    df = df.head(n=samples)
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
     #df_correct = df[df['anum_decisions'] == 1]
     #df_incorrect = df[df['anum_decisions'] == 0]
@@ -150,28 +155,36 @@ if __name__ == '__main__':
 
     # Process each batch
     for input_ids, attention_mask in zip(input_ids_batches, attention_mask_batches):
-        outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+        with torch.no_grad():
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
 
         #outputs = model(**inputs)
         hidden_states = outputs.hidden_states
         last_layer_hidden_state = hidden_states[-1]
+        last_layer_hidden_state = last_layer_hidden_state.mean(axis=1)
         if feature is None:
             feature = last_layer_hidden_state
-            print (feature.size())
+            #print (feature.size())
         else:
-            print (feature.size(), last_layer_hidden_state.size())
+            #print (feature.size(), last_layer_hidden_state.size())
             feature = torch.concat((feature,last_layer_hidden_state),dim=0)
 
 
         print(last_layer_hidden_state.shape)
     print (feature.size())
-    X = feature.mean(dim=1)
-    print (X.size())
-    y = df['anum_decisions']
+    #X = feature.mean(dim=1)
+    #print (X.size())
+    print (df['anum_decisions'])
+    y = pd.to_numeric(df['anum_decisions'])
+    model.cpu()
+    del model
+    gc.collect()
+    torch.cuda.empty_cache()
+    feature = feature.float().numpy()
 
     # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(feature, y, random_state=1)
 
     # Create regression matrices
     dtrain_reg = xgb.DMatrix(X_train, y_train)
