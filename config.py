@@ -3,7 +3,7 @@ import time
 import os
 from json import load
 from typing import Sequence
-
+import wandb
 from dotenv import load_dotenv
 from huggingface_hub.hf_api import ModelInfo
 import torch
@@ -42,7 +42,7 @@ class Config:
         self.configure_env()
 
         if self.exec_args: #does execute this if running for llm script
-            self.exec_string = f"{self.exec_args['model']}-{self.exec_args['dataset']}-{self.exec_kwargs['enc_max_len']}"
+            self.exec_string = f"{self.llm_config['model']}-{self.llm_config['dataset']}"
         self.exec_timestamp = time.strftime("%d%m%Y%H%M%S", time.localtime())
 
         self.working_dir = os.path.dirname(os.path.abspath(__file__))
@@ -58,10 +58,9 @@ class Config:
     def parse_args(self, args: dict) -> None:
         if args["config"]:
             with open(args["config"], "r") as fp:
-                json = load(fp)
-                self.exec_args = json["exec_args"]
-                self.exec_kwargs = json["exec_kwargs"]
-
+                config = load(fp)
+                self.llm_config = config["llm_config"]
+                self.wandb_config = config["wandb_config"]
 
     def configure_env(self) -> str:
         load_dotenv()
