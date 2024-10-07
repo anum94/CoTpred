@@ -34,7 +34,7 @@ def get_exec_str(args) -> str:
 
 if __name__ == "__main__":
     parser = config_parser()
-    exec_config_path = f"{parser.exec}.json"
+    exec_config_path = "config.json"
 
     # read run config for folder name
     with open(exec_config_path, "r") as j:
