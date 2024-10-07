@@ -1,7 +1,7 @@
 {
     "save_csv": true,
     "llm_config": {
-        "dataset_name": "gsm8k",
+        "dataset": "gsm8k",
         "samples": 10,
         "max_new_tokens": 256,
         "batch_size": 1,
@@ -9,7 +9,7 @@
         "exec_kwargs": {},
         "load_in_8bit": false,
         "load_in_4bit": false,
-        "device_map": "auto",
+        "device_map": "auto"
     },
     "wandb_config": {
         "entity": "nlp-sebis",
