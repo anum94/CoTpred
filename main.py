@@ -163,5 +163,7 @@ if __name__ == '__main__':
 
         print(last_layer_hidden_state.shape)
     print (feature.size())
+    avg_features = feature.mean(dim=1)
+    print (avg_features.size())
 
 
