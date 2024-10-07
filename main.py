@@ -8,6 +8,9 @@ import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI, BadRequestError
 from huggingface_hub import login
+from sklearn.model_selection import train_test_split
+import xgboost as xgb
+from sklearn.metrics import mean_squared_error
 print ("Loading .env was: ", load_dotenv())
 n=15
 batch_size = 2
@@ -88,7 +91,7 @@ if __name__ == '__main__':
 
 
     # Load the GSM8k dataset from Hugging Face
-    dataset = load_dataset("openai/gsm8k", "main", split='test')
+    #dataset = load_dataset("openai/gsm8k", "main", split='test')
     # Test on a subset from the GSM8k dataset
     # Load the Llama 3 8B model and tokenizer from Hugging Face
     model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
@@ -131,10 +134,10 @@ if __name__ == '__main__':
     feature = None
     df = pd.read_excel(fname, )
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
-    df_correct = df[df['anum_decisions'] == 1]
-    df_incorrect = df[df['anum_decisions'] == 0]
+    #df_correct = df[df['anum_decisions'] == 1]
+    #df_incorrect = df[df['anum_decisions'] == 0]
 
-    input_sentence = list(df_correct['Question'])
+    input_sentence = list(df['Question'])
     input_prompts = generate_cot_prompt(input_sentence)
 
     inputs = tokenizer(input_prompts, padding=True, truncation=True, return_tensors="pt")
@@ -163,7 +166,37 @@ if __name__ == '__main__':
 
         print(last_layer_hidden_state.shape)
     print (feature.size())
-    avg_features = feature.mean(dim=1)
-    print (avg_features.size())
+    X = feature.mean(dim=1)
+    print (X.size())
+    y = df['anum_decisions']
+
+    # Split the data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+
+    # Create regression matrices
+    dtrain_reg = xgb.DMatrix(X_train, y_train)
+    dtest_reg = xgb.DMatrix(X_test, y_test)
+
+    # Define hyperparameters
+    params = {"objective": "reg:squarederror", "tree_method": "gpu_hist"}
+
+
+    n = 100
+    evals = [(dtrain_reg, "train"), (dtest_reg, "validation")]
+
+    model = xgb.train(
+        params=params,
+        dtrain=dtrain_reg,
+        num_boost_round=n,
+        evals=evals,
+        verbose_eval=10
+    )
+
+
+    preds = model.predict(dtest_reg)
+    rmse = mean_squared_error(y_test, preds, squared=False)
+    print(f"RMSE of the base model: {rmse:.3f}")
+
+
 
 

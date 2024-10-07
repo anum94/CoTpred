@@ -4,3 +4,4 @@ accelerate
 python-dotenv
 openai
 tqdm
+scikit-learn
