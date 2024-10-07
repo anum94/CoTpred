@@ -6,3 +6,4 @@ openai
 tqdm
 scikit-learn
 xgboost
+wandb

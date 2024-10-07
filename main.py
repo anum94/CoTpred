@@ -3,6 +3,7 @@ from datasets import load_dataset
 import torch
 import gc
 import os
+from config import config
 from tqdm import tqdm
 import sys, logging
 import pandas as pd
@@ -87,6 +88,8 @@ def get_gpt4_score(questions:list, references:list, predictions:list) -> bool:
 
 if __name__ == '__main__':
 
+    model_name = (config.config_llm["model_hf_key"])
+    print (config)
 
     device = get_device()
     login(os.environ.get("HF_API_TOKEN"),add_to_git_credential = True)
@@ -96,7 +99,6 @@ if __name__ == '__main__':
     #dataset = load_dataset("openai/gsm8k", "main", split='test')
     # Test on a subset from the GSM8k dataset
     # Load the Llama 3 8B model and tokenizer from Hugging Face
-    model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
     fname = "llama3_gsm8k.csv"
     quantization_config=BitsAndBytesConfig(load_in_4bit=True)
     
