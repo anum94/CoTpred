@@ -18,9 +18,7 @@ from sklearn.metrics import accuracy_score, classification_report
 from datetime import datetime
 from sklearn.metrics import mean_squared_error
 print ("Loading .env was: ", load_dotenv())
-n=15
-batch_size = 2
-samples = 10
+
 def get_device() -> str:
     # set the device
     if torch.cuda.is_available():
@@ -151,7 +149,7 @@ def contruct_regression_features():
 
     # Run forward pass with a batch size of 2
     # Ensure inputs are divided as per batch size
-    input_ids_batches = inputs['input_ids'].split(batch_size)
+    input_ids_batches = inputs['input_ids'].split(llm_config["batch_size"])
     attention_mask_batches = inputs['attention_mask'].split(batch_size)
 
 
@@ -213,8 +211,9 @@ if __name__ == '__main__':
     model_name = llm_config["model_hf_key"]
     device = get_device()
     logging.info(f"Starting Script with config: {llm_config}")
+    print (llm_config)
 
-    quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config.load_in_4bit,load_in_8_bit=llm_config.load_in8bit)
+    quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config["load_in_4bit"],load_in_8_bit=llm_config["load_in_8bit"])
 
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                  torch_dtype=torch.bfloat16, output_hidden_states=True,
