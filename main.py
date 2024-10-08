@@ -1,4 +1,4 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM #, BitsAndBytesConfig
 from datasets import load_dataset
 import torch
 import gc
@@ -217,14 +217,15 @@ if __name__ == '__main__':
     logging.info(f"Starting Script with config: {llm_config}")
     print (llm_config)
 
-    quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config["load_in_4bit"],
-                                             bnb_4bit_use_double_quant=True,
-                                             bnb_4bit_quant_type="nf4",
-                                             bnb_4bit_compute_dtype=torch.bfloat16
-                                             )
+    #quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config["load_in_4bit"],
+    #                                         bnb_4bit_use_double_quant=True,
+    #                                         bnb_4bit_quant_type="nf4",
+    #                                         bnb_4bit_compute_dtype=torch.bfloat16
+    #                                         )
 
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map = "auto",
                                                  torch_dtype=torch.bfloat16, output_hidden_states=True,
+                                                 load_in_4bit = llm_config["load_in_4bit"],
                                                 # quantization_config=quantization_config, 
 							offload_folder="offload",trust_remote_code=True)  # .to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
