@@ -214,7 +214,7 @@ if __name__ == '__main__':
     device = get_device()
     logging.info(f"Starting Script with config: {llm_config}")
 
-    quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config.load_in4bit,load_in_8bit=llm_config.load_in8bit)
+    quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config.load_in_4bit,load_in_8_bit=llm_config.load_in8bit)
 
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                  torch_dtype=torch.bfloat16, output_hidden_states=True,
