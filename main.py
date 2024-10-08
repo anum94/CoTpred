@@ -43,8 +43,9 @@ def generate_answer(question):
     cot_prompt = generate_cot_prompt(question)
 
     # Tokenize the input prompt
-    inputs = tokenizer(cot_prompt, return_tensors="pt") #.to(device)
+    inputs = tokenizer(cot_prompt, return_tensors="pt", padding=True,truncation=True) #.to(device)
     #cpu_offload(model, device, offload_buffers=True)
+    inputs = inputs.to(device)
 
     # Generate output from the model (limiting max tokens for efficiency)
     outputs = model.generate(
@@ -154,12 +155,13 @@ def contruct_regression_features():
 
 
     # Process each batch
+    feature = None
     for input_ids, attention_mask in zip(input_ids_batches, attention_mask_batches):
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
 
-        #outputs = model(**inputs)
+        
         hidden_states = outputs.hidden_states
         last_layer_hidden_state = hidden_states[-1]
         last_layer_hidden_state = last_layer_hidden_state.mean(axis=1)
@@ -213,11 +215,16 @@ if __name__ == '__main__':
     logging.info(f"Starting Script with config: {llm_config}")
     print (llm_config)
 
-    quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config["load_in_4bit"],load_in_8_bit=llm_config["load_in_8bit"])
+    quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config["load_in_4bit"],
+                                             bnb_4bit_use_double_quant=True,
+                                             bnb_4bit_quant_type="nf4",
+                                             bnb_4bit_compute_dtype=torch.bfloat16
+                                             )
 
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map = "auto",
                                                  torch_dtype=torch.bfloat16, output_hidden_states=True,
-                                                 quantization_config=quantization_config)  # .to(device)
+                                                # quantization_config=quantization_config, 
+							offload_folder="offload",trust_remote_code=True)  # .to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer.pad_token_id = tokenizer.eos_token_id
 
