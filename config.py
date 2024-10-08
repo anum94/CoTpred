@@ -2,11 +2,9 @@ import argparse
 import time
 import os
 from json import load
-from typing import Sequence
 import wandb
 from dotenv import load_dotenv
-from huggingface_hub.hf_api import ModelInfo
-import torch
+from huggingface_hub import login
 
 
 class Config:
@@ -80,6 +78,7 @@ class Config:
         # os.environ["WANDB_PROJECT"]="my-awesome-project"
         os.environ[self.wandb_log_key] = "false"
         os.environ[self.wandb_watch_key] = "false"
+        login(os.environ.get("HF_API_TOKEN"), add_to_git_credential=True)
 
     def ssh_key_path(self) -> str:
         return f"{self.working_dir}/.ssh/id_ed25519"

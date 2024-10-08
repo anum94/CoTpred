@@ -6,12 +6,16 @@ import os
 from config import config
 from tqdm import tqdm
 import sys, logging
+import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI, BadRequestError
-from huggingface_hub import login
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-import xgboost as xgb
+from sklearn.datasets import load_wine
+from sklearn.metrics import accuracy_score, classification_report
+
+from datetime import datetime
 from sklearn.metrics import mean_squared_error
 print ("Loading .env was: ", load_dotenv())
 n=15
@@ -86,27 +90,30 @@ def get_gpt4_score(questions:list, references:list, predictions:list) -> bool:
 
     return outputs
 
-if __name__ == '__main__':
+def get_exec_str(datestamp) -> str:
 
-    model_name = (config.config_llm["model_hf_key"])
-    print (config)
+    ds = llm_config['dataset'].replace("/", "-")
 
-    device = get_device()
-    login(os.environ.get("HF_API_TOKEN"),add_to_git_credential = True)
+    exec_dir = os.path.join(config.working_dir, "runs", f"{ds}/{datestamp}")
+    if not os.path.exists(exec_dir):
+        os.makedirs(exec_dir)
 
+    return exec_dir
 
+def get_device() -> str:
+    # set the device
+    if torch.cuda.is_available():
+        print("CUDA AVAILABLE....")
+        torch.cuda.empty_cache()
+        return "cuda"
+    else:
+        return "cpu"
+
+def run_inference(ds_name):
     # Load the GSM8k dataset from Hugging Face
-    #dataset = load_dataset("openai/gsm8k", "main", split='test')
-    # Test on a subset from the GSM8k dataset
-    # Load the Llama 3 8B model and tokenizer from Hugging Face
-    fname = "llama3_gsm8k.csv"
-    quantization_config=BitsAndBytesConfig(load_in_4bit=True)
-    
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-                                                 torch_dtype=torch.bfloat16, output_hidden_states=True, quantization_config = quantization_config)  # .to(device)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    tokenizer.pad_token_id = tokenizer.eos_token_id
-    '''
+    dataset = load_dataset(ds_name, "main", split='test')
+    if llm_config.samples != "all":
+        dataset = dataset.select([i for i in range(llm_config.samples)])
     dummy = list()
     for i in tqdm(range(n)):
         sample = dataset[i]
@@ -121,29 +128,22 @@ if __name__ == '__main__':
         print(f"Reference Answer:\n{answer}")
         dummy.append([question, answer, gen_answer])
     df = pd.DataFrame(dummy, columns = ['Question', 'Reference', 'Prediction'])
-    df.to_csv(fname,index=False)
-    
-    tokenizer = None
-    model = None
-    df = pd.read_csv(fname)
-    llm_decisions = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
-    llm_decisions = [bool(decisions) for decisions in llm_decisions]
-    df["llm_decisions"] = llm_decisions
-    df.to_csv(fname, index=False)
-    '''
 
-    #tokenizer = None
-    #model = None
-    fname = "llama3_gsm8k.xlsx"
-    feature = None
+    fname = f"{ds_name.replace('/', '-')}.xlsx"
+    fname = os.path.join(get_exec_str(date_time), fname)
+
+    df.to_excel(fname,index=False)
+    logging.log (f"Inference Results are saved to {fname}")
+    return df
+
+def read_from_file(fname:str):
+
     df = pd.read_excel(fname, )
     print (df.columns)
-    print (df)
-    df = df.head(n=samples)
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
-    #df_correct = df[df['anum_decisions'] == 1]
-    #df_incorrect = df[df['anum_decisions'] == 0]
+    return df
 
+def contruct_regression_features():
     input_sentence = list(df['Question'])
     input_prompts = generate_cot_prompt(input_sentence)
 
@@ -173,45 +173,88 @@ if __name__ == '__main__':
             feature = torch.concat((feature,last_layer_hidden_state),dim=0)
 
 
-        print(last_layer_hidden_state.shape)
+
     print (feature.size())
     #X = feature.mean(dim=1)
     #print (X.size())
-    print (df['anum_decisions'])
+    feature = feature.float().numpy()
     y = pd.to_numeric(df['anum_decisions'])
+
+    fname = os.path.join(get_exec_str(date_time), "regression_features.txt")
+    np.savetxt(fname, feature, fmt='%d')
+    logging.log(f"Saved Regression Features at {fname}")
+
+    fname = os.path.join(get_exec_str(date_time), "regression_labels.txt")
+    np.savetxt(fname, np.array(y), fmt='%d')
+    logging.log(f"Saved Regression Labels at {fname}")
+
+    return feature, y
+
+def read_regression_features(feature_path, label_path):
+    feature = np.loadtxt(feature_path, dtype=int)
+    y = np.loadtxt(label_path, dtype=int)
+    return feature, y
+
+def logistic_regression(X, y):
+    # Split the data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+    model = LogisticRegression(max_iter=1000)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+
+
+if __name__ == '__main__':
+
+    date_time = '{date:%Y-%m-%d_%H-%M-%S}'.format(date=datetime.now())
+    llm_config = config.llm_config
+    model_name = llm_config["model_hf_key"]
+    device = get_device()
+    logging.log(f"Starting Script with config: {llm_config}")
+
+    quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config.load_in4bit,load_in_8bit=llm_config.load_in8bit)
+
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+                                                 torch_dtype=torch.bfloat16, output_hidden_states=True,
+                                                 quantization_config=quantization_config)  # .to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+
+
+    if llm_config["read_from_file"]:
+        df = read_from_file(fname = llm_config["filename"])
+    else:
+        df = run_inference(llm_config["dataset"])
+
+
+    if llm_config.samples != "all":
+        df = df.head(n=llm_config.samples)
+
+    if llm_config.regression_features_saved:
+        pass # read from file
+    else:
+        feature , y = contruct_regression_features()
+
+   #Some memory cleanup
     model.cpu()
     del model
     gc.collect()
     torch.cuda.empty_cache()
-    feature = feature.float().numpy()
 
-    # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(feature, y, random_state=1)
+    # Train the regression model.
+    logistic_regression(feature, y )
 
-    # Create regression matrices
-    dtrain_reg = xgb.DMatrix(X_train, y_train)
-    dtest_reg = xgb.DMatrix(X_test, y_test)
-
-    # Define hyperparameters
-    params = {"objective": "reg:squarederror", "tree_method": "gpu_hist"}
-
-
-    n = 100
-    evals = [(dtrain_reg, "train"), (dtest_reg, "validation")]
-
-    model = xgb.train(
-        params=params,
-        dtrain=dtrain_reg,
-        num_boost_round=n,
-        evals=evals,
-        verbose_eval=10
-    )
-
-
-    preds = model.predict(dtest_reg)
-    rmse = mean_squared_error(y_test, preds, squared=False)
-    print(f"RMSE of the base model: {rmse:.3f}")
-
+    '''
+    tokenizer = None
+    model = None
+    df = pd.read_csv(fname)
+    llm_decisions = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
+    llm_decisions = [bool(decisions) for decisions in llm_decisions]
+    df["llm_decisions"] = llm_decisions
+    df.to_csv(fname, index=False)
+    '''
 
 
 

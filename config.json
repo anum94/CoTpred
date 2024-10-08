@@ -1,15 +1,20 @@
 {
     "save_csv": true,
     "llm_config": {
-        "dataset": "gsm8k",
+        "dataset": "openai/gsm8k",
         "samples": 10,
         "max_new_tokens": 256,
         "batch_size": 1,
         "model_hf_key": "meta-llama/Meta-Llama-3.1-8B-Instruct",
         "exec_kwargs": {},
         "load_in_8bit": false,
-        "load_in_4bit": false,
-        "device_map": "auto"
+        "load_in_4bit": true,
+        "device_map": "auto",
+        "read_from_file": true,
+        "filename": "llama3_gsm8k.xlsx",
+        "regression_features_saved": false,
+        "regression_features_path": "path.xlsx"
+
     },
     "wandb_config": {
         "entity": "nlp-sebis",
