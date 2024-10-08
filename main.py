@@ -133,7 +133,7 @@ def run_inference(ds_name):
     fname = os.path.join(get_exec_str(date_time), fname)
 
     df.to_excel(fname,index=False)
-    logging.log (f"Inference Results are saved to {fname}")
+    logging.info (f"Inference Results are saved to {fname}")
     return df
 
 def read_from_file(fname:str):
@@ -182,11 +182,11 @@ def contruct_regression_features():
 
     fname = os.path.join(get_exec_str(date_time), "regression_features.txt")
     np.savetxt(fname, feature, fmt='%d')
-    logging.log(f"Saved Regression Features at {fname}")
+    logging.info(f"Saved Regression Features at {fname}")
 
     fname = os.path.join(get_exec_str(date_time), "regression_labels.txt")
     np.savetxt(fname, np.array(y), fmt='%d')
-    logging.log(f"Saved Regression Labels at {fname}")
+    logging.info(f"Saved Regression Labels at {fname}")
 
     return feature, y
 
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     llm_config = config.llm_config
     model_name = llm_config["model_hf_key"]
     device = get_device()
-    logging.log(f"Starting Script with config: {llm_config}")
+    logging.info(f"Starting Script with config: {llm_config}")
 
     quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config.load_in4bit,load_in_8bit=llm_config.load_in8bit)
 
