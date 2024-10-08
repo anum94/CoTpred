@@ -150,7 +150,7 @@ def contruct_regression_features():
     # Run forward pass with a batch size of 2
     # Ensure inputs are divided as per batch size
     input_ids_batches = inputs['input_ids'].split(llm_config["batch_size"])
-    attention_mask_batches = inputs['attention_mask'].split(batch_size)
+    attention_mask_batches = inputs['attention_mask'].split(llm_config["batch_size"])
 
 
     # Process each batch
