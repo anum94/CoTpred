@@ -53,6 +53,8 @@ def generate_answer(question):
         max_length=512,  # Adjust this to limit the length of the response
         num_beams=1,  # Beam search to improve output quality
         #early_stopping=True
+        temperature = 0,
+        do_sample = False,
         pad_token_id = tokenizer.eos_token_id,
     )
 
@@ -242,12 +244,6 @@ if __name__ == '__main__':
         pass # read from file
     else:
         feature , y = contruct_regression_features()
-
-   #Some memory cleanup
-    model.cpu()
-    del model
-    gc.collect()
-    torch.cuda.empty_cache()
 
     # Train the regression model.
     logistic_regression(feature, y )
