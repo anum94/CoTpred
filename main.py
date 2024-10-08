@@ -130,6 +130,11 @@ def run_inference(ds_name):
         dummy.append([question, answer, gen_answer])
     df = pd.DataFrame(dummy, columns = ['Question', 'Reference', 'Prediction'])
 
+    # Try evaluation using GPT4
+    llm_decisions = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
+    llm_decisions = [bool(decisions) for decisions in llm_decisions]
+    df["llm_decisions"] = llm_decisions
+
     fname = f"{ds_name.replace('/', '-')}.xlsx"
     fname = os.path.join(get_exec_str(date_time), fname)
 
@@ -223,18 +228,16 @@ if __name__ == '__main__':
     #                                         bnb_4bit_compute_dtype=torch.bfloat16
     #                                         )
 
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map = "auto",
-                                                 torch_dtype=torch.bfloat16, output_hidden_states=True,
-                                                 load_in_4bit = llm_config["load_in_4bit"],
-                                                # quantization_config=quantization_config, 
-							offload_folder="offload",trust_remote_code=True)  # .to(device)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    tokenizer.pad_token_id = tokenizer.eos_token_id
-
 
     if llm_config["read_from_file"]:
         df = read_from_file(fname = llm_config["filename"])
     else:
+        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+                                                 torch_dtype=torch.bfloat16,
+                                                  # load_in_8bit=True
+                                                      )
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokenizer.pad_token_id = tokenizer.eos_token_id
         df = run_inference(llm_config["dataset"])
 
 
@@ -244,20 +247,16 @@ if __name__ == '__main__':
     if llm_config["regression_features_saved"]:
         pass # read from file
     else:
+        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+                                                 torch_dtype=torch.bfloat16, output_hidden_states=True,
+                                                 return_dict_in_generate = True,
+                                                  # load_in_8bit=True
+                                                      )
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokenizer.pad_token_id = tokenizer.eos_token_id
         feature , y = contruct_regression_features()
 
     # Train the regression model.
     logistic_regression(feature, y )
-
-    '''
-    tokenizer = None
-    model = None
-    df = pd.read_csv(fname)
-    llm_decisions = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
-    llm_decisions = [bool(decisions) for decisions in llm_decisions]
-    df["llm_decisions"] = llm_decisions
-    df.to_csv(fname, index=False)
-    '''
-
 
 
