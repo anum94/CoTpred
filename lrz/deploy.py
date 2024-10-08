@@ -29,8 +29,10 @@ def config_parser() -> argparse.Namespace:
 
 
 def get_exec_str(args) -> str:
+    print (args)
     date_time = '{date:%Y-%m-%d_%H-%M-%S}'.format(date=datetime.now())
-    return f"{args['dataset']}-{args['model_hf_key']}/{date_time}"
+    return f"{args['llm_config']['dataset']}/{date_time}"
+    #return f"{args['llm_config']['dataset']}-{args['llm_config']['model_hf_key']}/{date_time}"
 
 if __name__ == "__main__":
     parser = config_parser()
