@@ -110,10 +110,10 @@ def get_device() -> str:
 def run_inference(ds_name):
     # Load the GSM8k dataset from Hugging Face
     dataset = load_dataset(ds_name, "main", split='test')
-    if llm_config.samples != "all":
-        dataset = dataset.select([i for i in range(llm_config.samples)])
+    if llm_config["samples"] != "all":
+        dataset = dataset.select([i for i in range(llm_config["samples"])])
     dummy = list()
-    for i in tqdm(range(n)):
+    for i in tqdm(range(len(dataset))):
         sample = dataset[i]
         question = sample['question']
         answer = sample['answer']
@@ -228,10 +228,10 @@ if __name__ == '__main__':
         df = run_inference(llm_config["dataset"])
 
 
-    if llm_config.samples != "all":
-        df = df.head(n=llm_config.samples)
+    if llm_config["samples"] != "all":
+        df = df.head(n=llm_config["samples"])
 
-    if llm_config.regression_features_saved:
+    if llm_config["regression_features_saved"]:
         pass # read from file
     else:
         feature , y = contruct_regression_features()
