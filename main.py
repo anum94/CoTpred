@@ -12,9 +12,8 @@ from dotenv import load_dotenv
 from openai import OpenAI, BadRequestError
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.datasets import load_wine
 from sklearn.metrics import accuracy_score, classification_report
-
+from together import Together
 from datetime import datetime
 from sklearn.metrics import mean_squared_error
 print ("Loading .env was: ", load_dotenv())
@@ -39,27 +38,39 @@ def generate_cot_prompt(questions):
 
 
 # Function to get the model's prediction
-def generate_answer(question):
+def generate_answer(question, togetherai = True):
     cot_prompt = generate_cot_prompt(question)
+    if togetherai:
+        client = Together(api_key=os.environ.get("TOGETHER_API_KEY"))
+        response = client.chat.completions.create(
+            model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+            messages=[{"role": "user", "content": question}],
+            max_tokens=512, #tokens to generate
+            temperature=0,
+            top_p=1,
+            do_sample=False,
+        )
+        answer = response.choices[0].message.content
+        #print("OUTPUT:", answer)
+    else:
+        # Tokenize the input prompt
+        inputs = tokenizer(cot_prompt, return_tensors="pt", padding=True,truncation=True) #.to(device)
+        #cpu_offload(model, device, offload_buffers=True)
+        inputs = inputs.to(device)
 
-    # Tokenize the input prompt
-    inputs = tokenizer(cot_prompt, return_tensors="pt", padding=True,truncation=True) #.to(device)
-    #cpu_offload(model, device, offload_buffers=True)
-    inputs = inputs.to(device)
+        # Generate output from the model (limiting max tokens for efficiency)
+        outputs = model.generate(
+            **inputs,
+            max_length=512,  # Adjust this to limit the length of the response
+            num_beams=1,  # Beam search to improve output quality
+            #early_stopping=True
+            temperature = 0,
+            do_sample = False,
+            pad_token_id = tokenizer.eos_token_id,
+        )
 
-    # Generate output from the model (limiting max tokens for efficiency)
-    outputs = model.generate(
-        **inputs,
-        max_length=512,  # Adjust this to limit the length of the response
-        num_beams=1,  # Beam search to improve output quality
-        #early_stopping=True
-        temperature = 0,
-        do_sample = False,
-        pad_token_id = tokenizer.eos_token_id,
-    )
-
-    # Decode the model's output
-    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        # Decode the model's output
+        answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     # Extract the final answer after the step-by-step reasoning
     return answer
@@ -116,24 +127,29 @@ def run_inference(ds_name):
     if llm_config["samples"] != "all":
         dataset = dataset.select([i for i in range(llm_config["samples"])])
     dummy = list()
+    if llm_config["togetherai"]:
+        print ("Running Inference using Together AI")
+    else:
+        print ("Running Inference using GPU")
     for i in tqdm(range(len(dataset))):
         sample = dataset[i]
         question = sample['question']
         answer = sample['answer']
 
-        gen_answer = generate_answer(question)
+        gen_answer = generate_answer(question, togetherai=llm_config["togetherai"])
 
-        # Display the question and model's chain-of-thought response
-        print(f"Question: {question}")
-        print(f"Model's Answer with Chain of Thought:\n{gen_answer}")
-        print(f"Reference Answer:\n{answer}")
+        if llm_config["verbose"]:
+            # Display the question and model's chain-of-thought response
+            print(f"Question: {question}")
+            print(f"Model's Answer with Chain of Thought:\n{gen_answer}")
+            print(f"Reference Answer:\n{answer}")
         dummy.append([question, answer, gen_answer])
     df = pd.DataFrame(dummy, columns = ['Question', 'Reference', 'Prediction'])
 
     # Try evaluation using GPT4
-    llm_decisions = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
-    llm_decisions = [bool(decisions) for decisions in llm_decisions]
-    df["llm_decisions"] = llm_decisions
+    #llm_decisions = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
+    #llm_decisions = [bool(decisions) for decisions in llm_decisions]
+    df["llm_decisions"] =  [False] * len(df)#llm_decisions
 
     fname = f"{ds_name.replace('/', '-')}.xlsx"
     fname = os.path.join(get_exec_str(date_time), fname)
@@ -143,8 +159,8 @@ def run_inference(ds_name):
     return df
 
 def read_from_file(fname:str):
-
-    df = pd.read_excel(fname, )
+    path = os.path.join(config.working_dir, fname)
+    df = pd.read_excel(path, )
     print (df.columns)
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
     return df
@@ -232,10 +248,11 @@ if __name__ == '__main__':
     if llm_config["read_from_file"]:
         df = read_from_file(fname = llm_config["filename"])
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-                                                 torch_dtype=torch.bfloat16,
-                                                  # load_in_8bit=True
-                                                      )
+        if not llm_config["togetherai"]:
+            model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+                                                     torch_dtype=torch.bfloat16,
+                                                     #load_in_4bit=True
+                                                          )
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
         df = run_inference(llm_config["dataset"])
@@ -244,6 +261,7 @@ if __name__ == '__main__':
     if llm_config["samples"] != "all":
         df = df.head(n=llm_config["samples"])
 
+    '''
     if llm_config["regression_features_saved"]:
         pass # read from file
     else:
@@ -258,5 +276,6 @@ if __name__ == '__main__':
 
     # Train the regression model.
     logistic_regression(feature, y )
+    '''
 
 
