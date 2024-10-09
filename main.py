@@ -175,6 +175,7 @@ def read_from_file(fname:str):
         df_false = df[df["anum_decisions"] == 0]
         df_true = df[df["anum_decisions"] == 1].head(n_false_label)
         df = pd.concat([df_true, df_false], ignore_index=True)
+        print (f"Using only {len(df)} samples to fix class imbalance in the dataset.")
     else:
         # just take samples that have labels
         df_false = df[df["anum_decisions"] == 0]
