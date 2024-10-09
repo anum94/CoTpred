@@ -162,7 +162,7 @@ def check_class_imbalance(df: pd.DataFrame):
     false_label = len(df[df["anum_decisions"] == 0])
     print (f" True Labels: {true_label}, False Labels: {false_label}")
     print (f"LLM can generate correct answer for {(true_label / (true_label + false_label))*100}% of the samples")
-    print ("")
+    return true_label, false_label
 
 
 def read_from_file(fname:str):
@@ -170,7 +170,17 @@ def read_from_file(fname:str):
     df = pd.read_excel(path, )
     print (df.columns)
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
-    check_class_imbalance(df)
+    n_true_label, n_false_label = check_class_imbalance(df)
+    if llm_config["class_imbalance"]:
+        df_false = df[df["anum_decisions"] == 0]
+        df_true = df[df["anum_decisions"] == 1].head(n_false_label)
+        df = pd.concat([df_true, df_false], ignore_index=True)
+    else:
+        # just take samples that have labels
+        df_false = df[df["anum_decisions"] == 0]
+        df_true = df[df["anum_decisions"] == 1]
+        df = pd.concat([df_true, df_false], ignore_index=True)
+    df = df.sample(frac=1) # shuffle the rows
     return df
 
 def contruct_regression_features():
@@ -263,7 +273,8 @@ if __name__ == '__main__':
 
 
     if llm_config["samples"] != "all":
-        df = df.head(n=llm_config["samples"])
+        if llm_config["samples"] < len(df):
+            df = df.head(n=llm_config["samples"])
 
     
     if llm_config["regression_features_saved"]:

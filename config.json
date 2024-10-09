@@ -14,8 +14,9 @@
         "filename": "runs/openai-gsm8k/2024-10-08_20-00-58/openai-gsm8k.xlsx",
         "regression_features_saved": false,
         "regression_features_path": "path.xlsx",
-        "togetherai": true,
-        "verbose": false
+        "togetherai": false,
+        "verbose": false,
+        "class_imbalance": true
 
     },
     "wandb_config": {
