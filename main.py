@@ -173,13 +173,14 @@ def contruct_regression_features():
 
     # Run forward pass with a batch size of 2
     # Ensure inputs are divided as per batch size
+    print ("Generating Features of regression model")
     input_ids_batches = inputs['input_ids'].split(llm_config["batch_size"])
     attention_mask_batches = inputs['attention_mask'].split(llm_config["batch_size"])
 
 
     # Process each batch
     feature = None
-    for input_ids, attention_mask in zip(input_ids_batches, attention_mask_batches):
+    for input_ids, attention_mask in tqdm(zip(input_ids_batches, attention_mask_batches), total = len(input_ids_batches)):
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
@@ -261,7 +262,7 @@ if __name__ == '__main__':
     if llm_config["samples"] != "all":
         df = df.head(n=llm_config["samples"])
 
-    '''
+    
     if llm_config["regression_features_saved"]:
         pass # read from file
     else:
@@ -276,6 +277,6 @@ if __name__ == '__main__':
 
     # Train the regression model.
     logistic_regression(feature, y )
-    '''
+    
 
 
