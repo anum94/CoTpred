@@ -157,12 +157,20 @@ def run_inference(ds_name):
     df.to_excel(fname,index=False)
     print(f"Inference Results are saved to {fname}")
     return df
+def check_class_imbalance(df: pd.DataFrame):
+    true_label = len(df[df["anum_decisions"] == 1])
+    false_label = len(df[df["anum_decisions"] == 0])
+    print (f" True Labels: {true_label}, False Labels: {false_label}")
+    print (f"LLM can generate correct answer for {(true_label / (true_label + false_label))*100}% of the samples")
+    print ("")
+
 
 def read_from_file(fname:str):
     path = os.path.join(config.working_dir, fname)
     df = pd.read_excel(path, )
     print (df.columns)
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
+    check_class_imbalance(df)
     return df
 
 def contruct_regression_features():
@@ -239,11 +247,6 @@ if __name__ == '__main__':
     print(f"Starting Script with config: {llm_config}")
     print (llm_config)
 
-    #quantization_config = BitsAndBytesConfig(load_in_4bit=llm_config["load_in_4bit"],
-    #                                         bnb_4bit_use_double_quant=True,
-    #                                         bnb_4bit_quant_type="nf4",
-    #                                         bnb_4bit_compute_dtype=torch.bfloat16
-    #                                         )
 
 
     if llm_config["read_from_file"]:
