@@ -183,13 +183,23 @@ def read_from_file(fname:str):
         df = pd.concat([df_true, df_false], ignore_index=True)
     df = df.sample(frac=1) # shuffle the rows
     return df
+def get_last_token_idx(inputs_ids: list) -> list:
+    last_token_idx = list()
+    for input_id in inputs_ids:
+        if tokenizer.pad_token_id in input_id:
+            idx = input_id.index(tokenizer.pad_token_id) - 1
+        else:
+            idx = -1
+        last_token_idx.append(idx)
+
+    return last_token_idx
 
 def contruct_regression_features():
     input_sentence = list(df['Question'])
     input_prompts = generate_cot_prompt(input_sentence)
 
     inputs = tokenizer(input_prompts, padding=True, truncation=True, return_tensors="pt")
-    print (inputs[0])
+    last_token_indices = get_last_token_idx(inputs['input_ids'].tolist())
 
     # Run forward pass with a batch size of 2
     # Ensure inputs are divided as per batch size
@@ -200,13 +210,13 @@ def contruct_regression_features():
 
     # Process each batch
     feature = None
-    for input_ids, attention_mask in tqdm(zip(input_ids_batches, attention_mask_batches), total = len(input_ids_batches)):
+    for input_ids, attention_mask, last_token_idx in tqdm(zip(input_ids_batches, attention_mask_batches, last_token_indices), total = len(input_ids_batches)):
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         
         hidden_states = outputs.hidden_states
         last_layer_hidden_state = hidden_states[-1]
-        last_layer_hidden_state = last_layer_hidden_state.mean(axis=1)
+        last_layer_hidden_state = last_layer_hidden_state[:,last_token_idx,:].squeeze()
         if feature is None:
             feature = last_layer_hidden_state
             #print (feature.size())
@@ -280,13 +290,18 @@ if __name__ == '__main__':
     if llm_config["regression_features_saved"]:
         pass # read from file
     else:
+        model = None
+        '''
         model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                  torch_dtype=torch.bfloat16, output_hidden_states=True,
                                                  return_dict_in_generate = True,
                                                   # load_in_8bit=True
                                                       )
+        '''
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
+        #mydict = tokenizer.vocab
+        #print(list(mydict.keys())[list(mydict.values()).index(128009)])
         feature , y = contruct_regression_features()
 
     # Train the regression model.
