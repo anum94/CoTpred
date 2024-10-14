@@ -189,6 +189,7 @@ def contruct_regression_features():
     input_prompts = generate_cot_prompt(input_sentence)
 
     inputs = tokenizer(input_prompts, padding=True, truncation=True, return_tensors="pt")
+    print (inputs[0])
 
     # Run forward pass with a batch size of 2
     # Ensure inputs are divided as per batch size
@@ -202,8 +203,6 @@ def contruct_regression_features():
     for input_ids, attention_mask in tqdm(zip(input_ids_batches, attention_mask_batches), total = len(input_ids_batches)):
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-
-
         
         hidden_states = outputs.hidden_states
         last_layer_hidden_state = hidden_states[-1]
