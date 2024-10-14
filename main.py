@@ -290,14 +290,12 @@ if __name__ == '__main__':
     if llm_config["regression_features_saved"]:
         pass # read from file
     else:
-        model = None
-        '''
         model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                  torch_dtype=torch.bfloat16, output_hidden_states=True,
                                                  return_dict_in_generate = True,
                                                   # load_in_8bit=True
                                                       )
-        '''
+
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
         #mydict = tokenizer.vocab
