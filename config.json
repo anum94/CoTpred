@@ -17,7 +17,8 @@
         "togetherai": false,
         "verbose": false,
         "class_imbalance": true,
-        "hidden_layer": -1
+        "hidden_layer": -1,
+        "regression_model": "linear regression"
 
     },
     "wandb_config": {
