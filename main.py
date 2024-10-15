@@ -1,7 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM #, BitsAndBytesConfig
 from datasets import load_dataset
 import torch
-import gc
+from utils.wandb import wandb_init_run, wandb_push_json, wandb_push_table
 import os
 from config import config
 from tqdm import tqdm
@@ -215,7 +215,7 @@ def contruct_regression_features():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         
         hidden_states = outputs.hidden_states
-        last_layer_hidden_state = hidden_states[-1]
+        last_layer_hidden_state = hidden_states[llm_config['hidden_layer']]
         last_layer_hidden_state = last_layer_hidden_state[:,last_token_idx,:].squeeze()
         if feature is None:
             feature = last_layer_hidden_state
@@ -254,8 +254,13 @@ def logistic_regression(X, y):
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-    print("Accuracy:", accuracy_score(y_test, y_pred))
+    accuracy = accuracy_score(y_test, y_pred)
+    print("Accuracy:", accuracy)
     print(classification_report(y_test, y_pred))
+
+    return accuracy
+
+
 
 
 if __name__ == '__main__':
@@ -266,6 +271,8 @@ if __name__ == '__main__':
     device = get_device()
     print(f"Starting Script with config: {llm_config}")
     print (llm_config)
+
+    wandb_init_run(config=llm_config)
 
 
 
@@ -303,7 +310,9 @@ if __name__ == '__main__':
         feature , y = contruct_regression_features()
 
     # Train the regression model.
-    logistic_regression(feature, y )
-    
+    accuracy = logistic_regression(feature, y )
+
+    wandb_table = {"accuracy": accuracy}
+    wandb_push_json(wandb_table)
 
 

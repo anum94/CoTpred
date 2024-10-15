@@ -16,7 +16,8 @@
         "regression_features_path": "path.xlsx",
         "togetherai": false,
         "verbose": false,
-        "class_imbalance": true
+        "class_imbalance": true,
+        "hidden_layer": -1
 
     },
     "wandb_config": {
