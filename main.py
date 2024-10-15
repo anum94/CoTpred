@@ -216,7 +216,7 @@ def contruct_regression_features():
         
         hidden_states = outputs.hidden_states
         last_layer_hidden_state = hidden_states[llm_config['hidden_layer']]
-        last_layer_hidden_state = last_layer_hidden_state[:,last_token_idx,:].squeeze()
+        last_layer_hidden_state = last_layer_hidden_state[:,last_token_idx,:]
         if feature is None:
             feature = last_layer_hidden_state
             #print (feature.size())
