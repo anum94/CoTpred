@@ -10,12 +10,11 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI, BadRequestError
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from models.regression import logistic_regression
+from models.feedforward import feedforward_network
 from together import Together
 from datetime import datetime
-from sklearn.metrics import mean_squared_error
+
 print ("Loading .env was: ", load_dotenv())
 
 def get_device() -> str:
@@ -247,19 +246,6 @@ def read_regression_features(feature_path, label_path):
     y = np.loadtxt(label_path, dtype=int)
     return feature, y
 
-def logistic_regression(X, y):
-    # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
-    if llm_config["regression_model"] == "linear regression":
-        model = LogisticRegression(max_iter=1000)
-    model.fit(X_train, y_train)
-
-    y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    print("Accuracy:", accuracy)
-    print(classification_report(y_test, y_pred))
-
-    return accuracy
 
 
 
@@ -272,9 +258,7 @@ if __name__ == '__main__':
     device = get_device()
     print(f"Starting Script with config: {llm_config}")
     print (llm_config)
-
     wandb_init_run(config=llm_config)
-
 
 
     if llm_config["read_from_file"]:
@@ -306,12 +290,15 @@ if __name__ == '__main__':
 
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
-        #mydict = tokenizer.vocab
-        #print(list(mydict.keys())[list(mydict.values()).index(128009)])
         feature , y = contruct_regression_features()
 
     # Train the regression model.
-    accuracy = logistic_regression(feature, y )
+    if llm_config["regression_model"] == "linear regression":
+        accuracy = logistic_regression(feature, y, llm_config )
+
+    else:
+        accuracy = feedforward_network(feature, y, llm_config)
+
 
     wandb_table = {"accuracy": accuracy, "#sample": llm_config["samples"], "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"]}
     wandb_push_json(wandb_table)

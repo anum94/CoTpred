@@ -18,7 +18,7 @@
         "verbose": false,
         "class_imbalance": true,
         "hidden_layer": -1,
-        "regression_model": "linear regression"
+        "regression_model": "feed forward"
 
     },
     "wandb_config": {
