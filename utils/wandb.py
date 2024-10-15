@@ -16,7 +16,7 @@ def wandb_push_json(table_json:json):
     col_names = list(table_json.keys())
     table = wandb.Table(columns=col_names)
     values = list(table_json.values())
-    table.add_data(values[0], values[1], values[2])
+    table.add_data(values[0])
     wandb.log({"metrics_table": table}, commit=True)
 
 def wandb_push_table(tab:json):
@@ -31,7 +31,7 @@ def wandb_push_table(tab:json):
     wandb.log({"data_table": table}, commit=True)
 
 
-def wandb_init_run( config = None, wandb_project_name = "cot-pred", entity = "anum-afzal-technical-university-of-munich-org"
+def wandb_init_run( config = None, wandb_project_name = "cot-pred", entity = "anum-afzal-technical-university-of-munich"
                    ):
     wandb_setup()
     wandb_mode = "online"
@@ -43,7 +43,7 @@ def wandb_init_run( config = None, wandb_project_name = "cot-pred", entity = "an
     wandb_run_name = randomname.get_name() + '_' + '_'.join(
         [model, ds, task])
 
-    wandb.init(project=wandb_project_name, entity=entity, config=vars(config), name=wandb_run_name,
-               mode=wandb_mode, group=config["samples"])
+    wandb.init(project=wandb_project_name, entity=entity, config=config, name=wandb_run_name,
+               mode=wandb_mode)
 
 
