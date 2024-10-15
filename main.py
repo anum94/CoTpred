@@ -250,7 +250,8 @@ def read_regression_features(feature_path, label_path):
 def logistic_regression(X, y):
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
-    model = LogisticRegression(max_iter=1000)
+    if llm_config["regression_model"] == "linear regression":
+        model = LogisticRegression(max_iter=1000)
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
@@ -312,7 +313,7 @@ if __name__ == '__main__':
     # Train the regression model.
     accuracy = logistic_regression(feature, y )
 
-    wandb_table = {"accuracy": accuracy}
+    wandb_table = {"accuracy": accuracy, "#sample": llm_config["samples"], "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"]}
     wandb_push_json(wandb_table)
 
 
