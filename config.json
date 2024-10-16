@@ -2,7 +2,7 @@
     "save_csv": true,
     "llm_config": {
         "dataset": "openai/gsm8k",
-        "samples": 158,
+        "samples": "all",
         "max_new_tokens": 256,
         "batch_size": 1,
         "model_hf_key": "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -11,12 +11,11 @@
         "load_in_4bit": true,
         "device_map": "auto",
         "read_from_file": true,
-        "filename": "runs/openai-gsm8k/2024-10-08_20-00-58/openai-gsm8k.xlsx",
+        "filename": "runs/openai-gsm8k/2024-10-08_20-00-58/llama3_gsm8k.xlsx",
         "regression_features_saved": false,
         "regression_features_path": "path.xlsx",
-        "togetherai": false,
         "verbose": false,
-        "class_imbalance": true,
+        "class_imbalance": false,
         "hidden_layer": -1,
         "regression_model": "feed forward"
 
