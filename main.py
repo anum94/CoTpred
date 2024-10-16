@@ -169,7 +169,7 @@ def read_from_file(fname:str):
     df = pd.read_excel(path, )
     print (df.columns)
     if "index_original" in df.columns:
-        df = df.drop(["index_original"])
+        df = df.drop("index_original", axis=1)
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
     n_true_label, n_false_label = check_class_imbalance(df)
     if llm_config["class_imbalance"]:
