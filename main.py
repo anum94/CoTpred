@@ -168,6 +168,8 @@ def read_from_file(fname:str):
     path = os.path.join(config.working_dir, fname)
     df = pd.read_excel(path, )
     print (df.columns)
+    if "index_original" in df.columns:
+        df = df.drop(["index_original"])
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
     n_true_label, n_false_label = check_class_imbalance(df)
     if llm_config["class_imbalance"]:
@@ -175,12 +177,14 @@ def read_from_file(fname:str):
         df_true = df[df["anum_decisions"] == 1].head(n_false_label)
         df = pd.concat([df_true, df_false], ignore_index=True)
         print (f"Using only {len(df)} samples to fix class imbalance in the dataset.")
-    else:
-        # just take samples that have labels
-        df_false = df[df["anum_decisions"] == 0]
-        df_true = df[df["anum_decisions"] == 1]
-        df = pd.concat([df_true, df_false], ignore_index=True)
-    df = df.sample(frac=1) # shuffle the rows
+        df = df.sample(frac=1)
+        #df.to_excel("runs/openai-gsm8k/2024-10-08_20-00-58/llama3_gsm8k_balanced.xlsx")
+    #else:
+    #    # just take samples that have labels
+    #    df_false = df[df["anum_decisions"] == 0]
+    #    df_true = df[df["anum_decisions"] == 1]
+    #    df = pd.concat([df_true, df_false], ignore_index=True)
+    #df = df.sample(frac=1) # shuffle the rows
     return df
 def get_last_token_idx(inputs_ids: list) -> list:
     last_token_idx = list()
