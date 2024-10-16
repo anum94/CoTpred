@@ -178,7 +178,8 @@ def read_from_file(fname:str):
         df = pd.concat([df_true, df_false], ignore_index=True)
         print (f"Using only {len(df)} samples to fix class imbalance in the dataset.")
         df = df.sample(frac=1)
-        #df.to_excel("runs/openai-gsm8k/2024-10-08_20-00-58/llama3_gsm8k_balanced.xlsx")
+        df.columns = ['index_original','Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
+        df.to_excel("runs/openai-gsm8k/2024-10-08_20-00-58/llama3_gsm8k_balanced.xlsx")
     #else:
     #    # just take samples that have labels
     #    df_false = df[df["anum_decisions"] == 0]
