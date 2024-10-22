@@ -55,14 +55,16 @@ def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
     print(f'Test accuracy: {accuracy:.4f}')
 
     # Get predictions
-    pred = best_model.predict(X_test, verbose=1)
+    log_prob = best_model.predict(X_test, verbose=1)
+    pred = (log_prob > 0.5).astype("int32")
 
-    compute_metrics(predictions=pred, true_labels=y_test)
+    compute_metrics(predictions=pred, true_labels=y_test, pred_prob = log_prob)
     return accuracy , loss
 
-def compute_metrics(predictions, true_labels):
+def compute_metrics(predictions, true_labels, pred_prob):
 
     print (predictions)
+    print (log_prob)
     # Calculate Precision
     precision = precision_score(true_labels, predictions)
     print(f'Precision: {precision}')
@@ -78,6 +80,10 @@ def compute_metrics(predictions, true_labels):
     # Calculate Confusion Matrix
     conf_matrix = confusion_matrix(true_labels, predictions)
     print(f'Confusion Matrix:\n{conf_matrix}')
+
+    # Calculate AUC
+    auc = roc_auc_score(true_labels, pred_prob)
+    print(f'Area Under Curve (AUC): {auc}')
 
 def plot_history(history):
     acc = history.history["accuracy"]
