@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from wandb.integration.keras import WandbMetricsLogger
 from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.initializers import HeNormal, HeUniform
 from utils.wandb import wandb_plot_line
 def feedforward_network(X, y, exec_str, epochs = 5):
     best_model_path = os.path.join(exec_str, 'best_model.keras')
@@ -20,9 +21,9 @@ def feedforward_network(X, y, exec_str, epochs = 5):
 
     # Define the model
     model = Sequential([
-        Dense(256, input_shape=(X_train.shape[1],), activation='relu'),
-        Dense(128, activation='relu'),
-        Dense(64, activation='relu'),
+        Dense(256, input_shape=(X_train.shape[1],), activation='relu', kernel_initializer=HeNormal()),
+        Dense(128, activation='relu', kernel_initializer=HeNormal()),
+        Dense(64, activation='relu', kernel_initializer=HeNormal()),
         Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
     ])
 
