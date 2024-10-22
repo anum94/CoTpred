@@ -31,7 +31,7 @@ def feedforward_network(X, y):
                   metrics=['accuracy'])
 
     print (model.summary())
-    checkpoint = ModelCheckpoint('best_model.h5', monitor='val_accuracy',
+    checkpoint = ModelCheckpoint('best_model.keras', monitor='val_accuracy',
                                  save_best_only=True, mode='max', verbose=1)
 
     # Train the model
