@@ -8,8 +8,7 @@ from wandb.integration.keras import WandbMetricsLogger
 from tensorflow.keras.callbacks import ModelCheckpoint
 from utils.wandb import wandb_plot_line
 def feedforward_network(X, y, exec_str):
-
-
+    best_model_path = os.path.join(exec_str, 'best_model.keras')
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -33,7 +32,8 @@ def feedforward_network(X, y, exec_str):
                   metrics=['accuracy'])
 
     print (model.summary())
-    checkpoint = ModelCheckpoint('best_model.keras', monitor='val_accuracy',
+
+    checkpoint = ModelCheckpoint(best_model_path, monitor='val_accuracy',
                                  save_best_only=True, mode='max', verbose=1)
 
     # Train the model
@@ -42,7 +42,7 @@ def feedforward_network(X, y, exec_str):
               )
     plot_history(history)
 
-    best_model_path = os.path.join(exec_str, 'best_model.keras')
+
     best_model = tf.keras.models.load_model(best_model_path)
 
     # Evaluate the model
