@@ -42,6 +42,8 @@ def feedforward_network(X, y):
            )
 
     best_model = tf.keras.models.load_model('best_model.keras')
+    print (history.params)
+    print (history.history.keys())
 
     # Evaluate the model
     loss, accuracy = best_model.evaluate(X_test, y_test)
