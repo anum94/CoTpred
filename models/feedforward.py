@@ -35,11 +35,15 @@ def feedforward_network(X, y):
                                  save_best_only=True, mode='max', verbose=1)
 
     # Train the model
-    model.fit(X_train, y_train, epochs=50, batch_size=8, validation_split=0.2,
+    history = model.fit(X_train, y_train, epochs=50, batch_size=8, validation_split=0.2,
               callbacks = [WandbMetricsLogger(log_freq=10), checkpoint]
               )
+    print (f"History: {history}"
+           )
+
+    best_model = tf.keras.models.load_model('best_model.keras')
 
     # Evaluate the model
-    loss, accuracy = model.evaluate(X_test, y_test)
+    loss, accuracy = best_model.evaluate(X_test, y_test)
     print(f'Test accuracy: {accuracy:.4f}')
     return accuracy , loss
