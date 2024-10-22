@@ -307,7 +307,8 @@ if __name__ == '__main__':
 
     wandb_table = {"test_accuracy": accuracy, "#sample": len(y),
                    "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
-                   "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"]}
+                   "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],
+                    "weights_init": "HE"   }
     wandb_push_json(wandb_table)
 
 
