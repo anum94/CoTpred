@@ -14,5 +14,6 @@ def logistic_regression(X, y, llm_config):
     accuracy = accuracy_score(y_test, y_pred)
     print("Accuracy:", accuracy)
     print(classification_report(y_test, y_pred))
+    loss = None
 
-    return accuracy
+    return accuracy, loss

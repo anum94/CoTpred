@@ -35,3 +35,4 @@ def feedforward_network(X, y, llm_config):
     # Evaluate the model
     loss, accuracy = model.evaluate(X_test, y_test)
     print(f'Test accuracy: {accuracy:.4f}')
+    return accuracy , loss
