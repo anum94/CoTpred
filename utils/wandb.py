@@ -24,7 +24,7 @@ def wandb_plot_line(x_values, y_values, title, x_caption, y_caption):
     table = wandb.Table(data=data, columns=[x_caption, y_caption])
     wandb.log(
         {
-            "per epoch": wandb.plot.line(
+            title: wandb.plot.line(
                 table, x_caption, y_caption, title=title
             )
         }
