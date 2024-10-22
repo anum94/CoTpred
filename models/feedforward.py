@@ -1,7 +1,7 @@
 import tensorflow as tf
 import os
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, LeakyReLU
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from wandb.integration.keras import WandbMetricsLogger
@@ -29,9 +29,9 @@ def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
     ])
     '''
     model = Sequential([
-        Dense(256, input_shape=(X_train.shape[1],), activation=keras.layers.LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
-        Dense(128, activation=keras.layers.LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
-        Dense(64, activation=keras.layers.LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
+        Dense(256, input_shape=(X_train.shape[1],), activation=LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
+        Dense(128, activation=LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
+        Dense(64, activation=LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
         Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
     ])
 
