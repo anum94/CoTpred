@@ -35,7 +35,7 @@ def feedforward_network(X, y):
                                  save_best_only=True, mode='max', verbose=1)
 
     # Train the model
-    model.fit(X_train, y_train, epochs=50, batch_size=2, validation_split=0.2,
+    model.fit(X_train, y_train, epochs=50, batch_size=8, validation_split=0.2,
               callbacks = [WandbMetricsLogger(log_freq=10), checkpoint]
               )
 
