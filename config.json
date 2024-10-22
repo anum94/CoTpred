@@ -20,7 +20,7 @@
         "fix_class_imbalance": false,
         "hidden_layer": -1,
         "regression_model": "feed forward",
-        "epochs": 50
+        "epochs": 25
 
     },
     "wandb_config": {
