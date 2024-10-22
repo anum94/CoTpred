@@ -27,7 +27,7 @@ def wandb_plot_line(x_values, y_values, title, x_caption, y_caption):
             title: wandb.plot.line(
                 table, x_caption, y_caption, title=title
             )
-        }
+        }, commit=True
     )
 
 def wandb_push_table(tab:json):
