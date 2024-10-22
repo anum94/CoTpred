@@ -299,13 +299,15 @@ if __name__ == '__main__':
 
     # Train the regression model.
     if llm_config["regression_model"] == "linear regression":
-        accuracy = logistic_regression(feature, y, llm_config )
+        accuracy, loss = logistic_regression(feature, y, llm_config )
 
     else:
-        accuracy = feedforward_network(feature, y, llm_config)
+        accuracy, loss = feedforward_network(feature, y, llm_config)
 
 
-    wandb_table = {"accuracy": accuracy, "#sample": llm_config["samples"], "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"]}
+    wandb_table = {"accuracy": accuracy, "loss":loss, "#sample": llm_config["samples"],
+                   "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
+                   "balance_ds": llm_config["class_imbalance"]}
     wandb_push_json(wandb_table)
 
 
