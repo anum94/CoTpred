@@ -302,7 +302,7 @@ if __name__ == '__main__':
         accuracy, loss = logistic_regression(feature, y, llm_config )
 
     else:
-        accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time))
+        accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"])
 
 
     wandb_table = {"test_accuracy": accuracy, "#sample": len(y),

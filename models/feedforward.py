@@ -58,7 +58,6 @@ def plot_history(history):
 
 
     epochs = range(1, len(loss) + 1)
-    print (epochs, acc)
 
     wandb_plot_line(epochs,acc,"Training Accuracy per epoch", "epoch","acc")
     wandb_plot_line(epochs, loss, "Training Loss epoch", "epoch", "loss")
