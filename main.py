@@ -302,7 +302,7 @@ if __name__ == '__main__':
         accuracy, loss = logistic_regression(feature, y, llm_config )
 
     else:
-        accuracy, loss = feedforward_network(feature, y, llm_config)
+        accuracy, loss = feedforward_network(feature, y)
 
 
     wandb_table = {"accuracy": accuracy, "loss":loss, "#sample": len(y),

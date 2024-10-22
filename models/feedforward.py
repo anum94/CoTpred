@@ -4,7 +4,8 @@ from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from wandb.integration.keras import WandbMetricsLogger
-def feedforward_network(X, y, llm_config):
+from tensorflow.keras.callbacks import ModelCheckpoint
+def feedforward_network(X, y):
 
 
 
@@ -30,10 +31,12 @@ def feedforward_network(X, y, llm_config):
                   metrics=['accuracy'])
 
     print (model.summary())
+    checkpoint = ModelCheckpoint('best_model.h5', monitor='val_accuracy',
+                                 save_best_only=True, mode='max', verbose=1)
 
     # Train the model
     model.fit(X_train, y_train, epochs=50, batch_size=2, validation_split=0.2,
-              callbacks = [WandbMetricsLogger(log_freq=10)]
+              callbacks = [WandbMetricsLogger(log_freq=10), checkpoint]
               )
 
     # Evaluate the model
