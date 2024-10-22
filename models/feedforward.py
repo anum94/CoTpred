@@ -20,10 +20,18 @@ def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
     X_test = scaler.transform(X_test)
 
     # Define the model
+    '''
     model = Sequential([
         Dense(256, input_shape=(X_train.shape[1],), activation='relu', kernel_initializer=HeNormal()),
         Dense(128, activation='relu', kernel_initializer=HeNormal()),
         Dense(64, activation='relu', kernel_initializer=HeNormal()),
+        Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
+    ])
+    '''
+    model = Sequential([
+        Dense(256, input_shape=(X_train.shape[1],), activation=keras.layers.LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
+        Dense(128, activation=keras.layers.LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
+        Dense(64, activation=keras.layers.LeakyReLU(alpha=0.01), kernel_initializer=HeNormal()),
         Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
     ])
 
