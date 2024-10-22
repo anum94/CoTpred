@@ -172,7 +172,7 @@ def read_from_file(fname:str):
         df = df.drop("index_original", axis=1)
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
     n_true_label, n_false_label = check_class_imbalance(df)
-    if llm_config["class_imbalance"]:
+    if llm_config["fix_class_imbalance"]:
         df_false = df[df["anum_decisions"] == 0]
         df_true = df[df["anum_decisions"] == 1].head(n_false_label)
         df = pd.concat([df_true, df_false], ignore_index=True)
@@ -305,7 +305,7 @@ if __name__ == '__main__':
         accuracy, loss = feedforward_network(feature, y, llm_config)
 
 
-    wandb_table = {"accuracy": accuracy, "loss":loss, "#sample": llm_config["samples"],
+    wandb_table = {"accuracy": accuracy, "loss":loss, "#sample": len(y),
                    "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
                    "balance_ds": llm_config["class_imbalance"]}
     wandb_push_json(wandb_table)
