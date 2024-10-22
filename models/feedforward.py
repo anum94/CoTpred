@@ -55,7 +55,7 @@ def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
     print(f'Test accuracy: {accuracy:.4f}')
 
     # Get predictions
-    pred = best_model.predict_classes(X_test, verbose=1)
+    pred = best_model.predict(X_test, verbose=1)
 
     compute_metrics(predictions=pred, true_labels=y_test)
     return accuracy , loss
