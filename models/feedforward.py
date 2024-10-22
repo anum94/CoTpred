@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from wandb.integration.keras import WandbMetricsLogger
 from tensorflow.keras.callbacks import ModelCheckpoint
 from utils.wandb import wandb_plot_line
-def feedforward_network(X, y, exec_str):
+def feedforward_network(X, y, exec_str, epochs = 5):
     best_model_path = os.path.join(exec_str, 'best_model.keras')
 
     # Split the data into training and testing sets
@@ -37,7 +37,7 @@ def feedforward_network(X, y, exec_str):
                                  save_best_only=True, mode='max', verbose=1)
 
     # Train the model
-    history = model.fit(X_train, y_train, epochs=50, batch_size=8, validation_split=0.2,
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=8, validation_split=0.2,
               callbacks = [WandbMetricsLogger(log_freq=10), checkpoint]
               )
     plot_history(history)
