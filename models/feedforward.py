@@ -8,6 +8,8 @@ from wandb.integration.keras import WandbMetricsLogger
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.initializers import HeNormal, HeUniform
 from utils.wandb import wandb_plot_line
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
+import numpy as np
 def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
     best_model_path = os.path.join(exec_str, 'best_model.keras')
 
@@ -51,7 +53,31 @@ def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
     # Evaluate the model
     loss, accuracy = best_model.evaluate(X_test, y_test)
     print(f'Test accuracy: {accuracy:.4f}')
+
+    # Get predictions
+    pred = best_model.predict_classes(X_test, verbose=1)
+
+    compute_metrics(predictions=pred, true_labels=y_test)
     return accuracy , loss
+
+def compute_metrics(predictions, true_labels):
+
+    print (predictions)
+    # Calculate Precision
+    precision = precision_score(true_labels, predictions)
+    print(f'Precision: {precision}')
+
+    # Calculate Recall
+    recall = recall_score(true_labels, predictions)
+    print(f'Recall: {recall}')
+
+    # Calculate F1 Score
+    f1 = f1_score(true_labels, predictions)
+    print(f'F1 Score: {f1}')
+
+    # Calculate Confusion Matrix
+    conf_matrix = confusion_matrix(true_labels, predictions)
+    print(f'Confusion Matrix:\n{conf_matrix}')
 
 def plot_history(history):
     acc = history.history["accuracy"]
