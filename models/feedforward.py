@@ -3,7 +3,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-
+from wandb.integration.keras import WandbMetricsLogger
 def feedforward_network(X, y, llm_config):
 
 
@@ -29,8 +29,12 @@ def feedforward_network(X, y, llm_config):
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
+    print (model.summary())
+
     # Train the model
-    model.fit(X_train, y_train, epochs=50, batch_size=2, validation_split=0.2)
+    model.fit(X_train, y_train, epochs=50, batch_size=2, validation_split=0.2,
+              callbacks = [WandbMetricsLogger(log_freq=10)]
+              )
 
     # Evaluate the model
     loss, accuracy = model.evaluate(X_test, y_test)
