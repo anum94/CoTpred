@@ -305,7 +305,7 @@ if __name__ == '__main__':
         accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time))
 
 
-    wandb_table = {"accuracy": accuracy, "loss":loss, "#sample": len(y),
+    wandb_table = {"test_accuracy": accuracy, "#sample": len(y),
                    "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
                    "balance_ds": llm_config["class_imbalance"]}
     wandb_push_json(wandb_table)

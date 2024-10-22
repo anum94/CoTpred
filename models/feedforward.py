@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from wandb.integration.keras import WandbMetricsLogger
 from tensorflow.keras.callbacks import ModelCheckpoint
+from utils.wandb import wandb_plot_line
 def feedforward_network(X, y, exec_str):
 
 
@@ -39,18 +40,28 @@ def feedforward_network(X, y, exec_str):
     history = model.fit(X_train, y_train, epochs=50, batch_size=8, validation_split=0.2,
               callbacks = [WandbMetricsLogger(log_freq=10), checkpoint]
               )
-    print (f"History: {history}"
-           )
+    plot_history(history)
+
     best_model_path = os.path.join(exec_str, 'best_model.keras')
-    best_model = tf.keras.models.load_model()
-    #print (history.params)
-    print (history.history["accuracy"])
-    print(history.history["loss"])
-    print(history.history["val_accuracy"])
-    print(history.history["val_loss"])
-    print(len(history.history["val_loss"]))
+    best_model = tf.keras.models.load_model(best_model_path)
 
     # Evaluate the model
     loss, accuracy = best_model.evaluate(X_test, y_test)
     print(f'Test accuracy: {accuracy:.4f}')
     return accuracy , loss
+
+def plot_history(history):
+    acc = history.history["accuracy"]
+    loss = history.history["loss"]
+    val_acc = history.history["val_accuracy"]
+    val_loss = history.history["val_loss"]
+
+
+    epochs = range(1, len(loss) + 1)
+
+    wandb_plot_line(epochs,acc,"Training Accuracy per epoch", "epoch","acc")
+    wandb_plot_line(epochs, loss, "Training Loss epoch", "epoch", "loss")
+    wandb_plot_line(epochs, val_acc, "Validation Accuracy per epoch", "epoch", "val_acc")
+    wandb_plot_line(epochs, val_loss, "Validation Loss per epoch", "epoch", "val_loss")
+
+

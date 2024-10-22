@@ -16,8 +16,19 @@ def wandb_push_json(table_json:json):
     col_names = list(table_json.keys())
     table = wandb.Table(columns=col_names)
     values = list(table_json.values())
-    table.add_data(values[0], values[1], values[2], values[3], values[4], values[5])
+    table.add_data(values[0], values[1], values[2], values[3], values[4])
     wandb.log({"metrics_table": table}, commit=True)
+
+def wandb_plot_line(x_values, y_values, title, x_caption, y_caption):
+    data = [[x, y] for (x, y) in zip(x_values, y_values)]
+    table = wandb.Table(data=data, columns=[x_caption, y_caption])
+    wandb.log(
+        {
+            "per epoch": wandb.plot.line(
+                table, x_caption, y_caption, title=title
+            )
+        }
+    )
 
 def wandb_push_table(tab:json):
     col_names = list(tab.keys())
