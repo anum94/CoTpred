@@ -63,8 +63,6 @@ def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
 
 def compute_metrics(predictions, true_labels, pred_prob):
 
-    print (predictions)
-    print (pred_prob)
     # Calculate Precision
     precision = precision_score(true_labels, predictions)
     print(f'Precision: {precision}')
