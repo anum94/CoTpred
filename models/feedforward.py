@@ -47,6 +47,7 @@ def feedforward_network(X, y):
     print(history.history["loss"])
     print(history.history["val_accuracy"])
     print(history.history["val_loss"])
+    print(len(history.history["val_loss"]))
 
     # Evaluate the model
     loss, accuracy = best_model.evaluate(X_test, y_test)
