@@ -1,11 +1,12 @@
 import tensorflow as tf
+import os
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from wandb.integration.keras import WandbMetricsLogger
 from tensorflow.keras.callbacks import ModelCheckpoint
-def feedforward_network(X, y):
+def feedforward_network(X, y, exec_str):
 
 
 
@@ -40,8 +41,8 @@ def feedforward_network(X, y):
               )
     print (f"History: {history}"
            )
-
-    best_model = tf.keras.models.load_model('best_model.keras')
+    best_model_path = os.path.join(exec_str, 'best_model.keras')
+    best_model = tf.keras.models.load_model()
     #print (history.params)
     print (history.history["accuracy"])
     print(history.history["loss"])
