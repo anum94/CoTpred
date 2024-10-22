@@ -8,7 +8,7 @@ from wandb.integration.keras import WandbMetricsLogger
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.initializers import HeNormal, HeUniform
 from utils.wandb import wandb_plot_line
-def feedforward_network(X, y, exec_str, epochs = 5):
+def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
     best_model_path = os.path.join(exec_str, 'best_model.keras')
 
     # Split the data into training and testing sets
