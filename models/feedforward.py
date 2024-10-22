@@ -30,7 +30,7 @@ def feedforward_network(X, y, llm_config):
                   metrics=['accuracy'])
 
     # Train the model
-    model.fit(X_train, y_train, epochs=5, batch_size=2, validation_split=0.2)
+    model.fit(X_train, y_train, epochs=50, batch_size=2, validation_split=0.2)
 
     # Evaluate the model
     loss, accuracy = model.evaluate(X_test, y_test)

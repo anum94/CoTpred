@@ -285,7 +285,7 @@ if __name__ == '__main__':
 
     
     if llm_config["regression_features_saved"]:
-        pass # read from file
+        feature, y = read_regression_features(llm_config["regression_features_path"], llm_config["regression_labels_path"])
     else:
         model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                  torch_dtype=torch.bfloat16, output_hidden_states=True,
