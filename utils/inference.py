@@ -18,8 +18,8 @@ def generate_prompt(questions):
         cot_prompts = (f"Generate answer of the question in the numberic form without showing intermediate calculation steps."
                        f"\nQuestion: {questions}  \n Answer:\n")
     else:
-        cot_prompts = [(f"Generate answer of the given question without any explanation or reasoning."
-                    f"Question: {question} \n Please generate the answer in one word. \n Answer:\n") for question in questions]
+        cot_prompts = [(f"Generate answer of the given question without any chain of thought prompting. Do not give any reasoning or explanations as a part of the output."
+                    f"Question: {question} \n Please generate the answer in few words. \n Answer:\n") for question in questions]
     #print (f"CoT Prompt: {cot_prompts[0}\n")
     return cot_prompts
 
@@ -38,7 +38,7 @@ def generate_answer(question, tokenizer, CoT, togetherai = True, model = None):
         response = client.chat.completions.create(
             model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
             messages=[{"role": "user", "content": cot_prompt}],
-            max_tokens=10, #tokens to generate
+            max_tokens=50, #tokens to generate
             temperature=0,
             top_p=1,
             do_sample=False,

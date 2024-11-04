@@ -1,5 +1,5 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM #, BitsAndBytesConfig
-
+from datasets import load_dataset, concatenate_datasets
 import torch
 from utils.wandb import wandb_init_run, wandb_push_json, wandb_push_table
 import os
@@ -13,6 +13,7 @@ from openai import OpenAI, BadRequestError
 from models.regression import logistic_regression
 from models.feedforward import feedforward_network
 from datetime import datetime
+from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
 from utils.ds import get_ds
 CoT = False
@@ -34,7 +35,10 @@ def get_exec_str(datestamp) -> str:
 
 def run_inference(ds_name):
 
-    dataset = get_ds(ds_name)
+    #dataset = get_ds(ds_name)
+    dataset_train = load_dataset("openai/gsm8k", "main", split='train')
+    dataset_test = load_dataset("openai/gsm8k", "main", split='test')
+    dataset = concatenate_datasets([dataset_train, dataset_test])
 
     if llm_config["samples"] != "all":
         dataset = dataset.select([i for i in range(llm_config["samples"])])
@@ -62,29 +66,45 @@ def run_inference(ds_name):
 
         dummy.append([question, answer, gen_answer])
     df = pd.DataFrame(dummy, columns = ['Question', 'Reference', 'Prediction'])
-
-    # Try evaluation using GPT4
-    #llm_decisions = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
-    #llm_decisions = [bool(decisions) for decisions in llm_decisions]
-    df["llm_decisions"] =  [False] * len(df)#llm_decisions
+    df["anum_decisions"] = [False] * len(df)
+    df["llm_decisions"] = [False] * len(df)
 
     fname = f"{ds_name.replace('/', '-')}.xlsx"
     fname = os.path.join(get_exec_str(date_time), fname)
+    df.to_excel(fname, index=False)
+    print(f"Inference Results without evaluation are saved to {fname}")
 
+    # Try evaluation using GPT4
+    print("Running Evaluation using GPT-4o mini.")
+    df["llm_decisions"] = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
     df.to_excel(fname,index=False)
-    print(f"Inference Results are saved to {fname}")
-    print(df)
-    return df
+    print(f"Inference Results with GPT-4o mini evaluation are saved to {fname}")
+
+    return df, fname
 
 def check_class_imbalance(df: pd.DataFrame):
 
-    true_label = len(df[df["anum_decisions"] == 1])
-    false_label = len(df[df["anum_decisions"] == 0])
+    true_label = len(df[df["llm_decisions"] == 1])
+    false_label = len(df[df["llm_decisions"] == 0])
     print (f" True Labels: {true_label}, False Labels: {false_label}")
     print (f"LLM can generate correct answer for {(true_label / (true_label + false_label))*100}% of the samples")
     return true_label, false_label
 
+def get_balanced_ds(df, samples_per_class, fname = None):
 
+    df_false = df[df["llm_decisions"] == 0]
+    df_true = df[df["llm_decisions"] == 1].head(samples_per_class)
+    df = pd.concat([df_true, df_false], ignore_index=True)
+    print(f"Using only {len(df)} samples to fix class imbalance in the dataset.")
+    df = df.sample(frac=1)
+    df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
+    if fname is not None:
+        new_fname = os.path.basename(fname).split(".xlsx")[0] + f"_balanced_{len(df)}.xlsx"
+    else:
+        new_fname = f"balanced_{len(df)}.xlsx"
+    new_fname = os.path.join(get_exec_str(date_time), new_fname)
+    df.to_excel(new_fname)
+    return df
 def read_from_file(fname:str):
 
     path = os.path.join(config.working_dir, fname)
@@ -96,24 +116,6 @@ def read_from_file(fname:str):
 
     df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
 
-    n_true_label, n_false_label = check_class_imbalance(df)
-
-    if llm_config["fix_class_imbalance"]:
-        df_false = df[df["anum_decisions"] == 0]
-        df_true = df[df["anum_decisions"] == 1].head(n_false_label)
-        df = pd.concat([df_true, df_false], ignore_index=True)
-        print (f"Using only {len(df)} samples to fix class imbalance in the dataset.")
-        df = df.sample(frac=1)
-        df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
-        new_fname = os.path.basename(fname).split(".xlsx")[0] + f"_balanced_{len(df)}.xlsx"
-        new_fname = os.path.join(get_exec_str(date_time), new_fname)
-        df.to_excel(new_fname)
-    #else:
-    #    # just take samples that have human labels
-    #    df_false = df[df["anum_decisions"] == 0]
-    #    df_true = df[df["anum_decisions"] == 1]
-    #    df = pd.concat([df_true, df_false], ignore_index=True)
-    #df = df.sample(frac=1) # shuffle the rows
     return df
 
 def get_last_token_idx(inputs_ids: list) -> list:
@@ -196,6 +198,9 @@ if __name__ == '__main__':
 
     if llm_config["read_from_file"]:
         df = read_from_file(fname = llm_config["filename"])
+        if llm_config["fix_class_imbalance"]:
+            n_true_label, n_false_label = check_class_imbalance(df)
+            df = get_balanced_ds(df, samples_per_class=n_false_label, fname=llm_config["filename"])
     else:
         # Generate answer
         if not llm_config["togetherai"]:
@@ -205,8 +210,10 @@ if __name__ == '__main__':
                                                           )
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
-        df = run_inference(llm_config["dataset"])
-
+        df, fname = run_inference(llm_config["dataset"])
+        if llm_config["fix_class_imbalance"]:
+            n_true_label, n_false_label = check_class_imbalance(df)
+            df = get_balanced_ds(df, samples_per_class=n_false_label, fname=fname)
 
     if llm_config["samples"] != "all":
         if llm_config["samples"] < len(df):

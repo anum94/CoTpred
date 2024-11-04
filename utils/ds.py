@@ -1,10 +1,10 @@
 from datasets import load_dataset, concatenate_datasets
 
-def gsm8k(ds_name):
+def gsm8k():
     # Load the GSM8k dataset from Hugging Face
 
-    dataset_train = load_dataset(ds_name, "main", split='train')
-    dataset_test = load_dataset(ds_name, "main", split='test')
+    dataset_train = load_dataset("openai/gsm8k", "main", split='train')
+    dataset_test = load_dataset("openai/gsm8k", "main", split='test')
     dataset = concatenate_datasets([dataset_train, dataset_test])
     return dataset
 

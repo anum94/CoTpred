@@ -11,7 +11,7 @@
         "load_in_8bit": false,
         "load_in_4bit": true,
         "device_map": "auto",
-        "read_from_file": true,
+        "read_from_file": false,
         "filename": "runs/openai-gsm8k/processed_ds/llama3_gsm8k_train_test_balanced.xlsx",
         "regression_features_saved": false,
         "regression_features_path": "runs/openai-gsm8k/2024-10-22_08-16-15/regression_features.txt",
