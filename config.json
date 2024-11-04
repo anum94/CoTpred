@@ -2,7 +2,7 @@
     "save_csv": true,
     "llm_config": {
         "dataset": "openai/gsm8k",
-        "samples": 10,
+        "samples": "all",
         "max_new_tokens": 256,
         "togetherai": true,
         "batch_size": 1,
