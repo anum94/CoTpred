@@ -97,7 +97,7 @@ def get_balanced_ds(df, samples_per_class, fname = None):
     df = pd.concat([df_true, df_false], ignore_index=True)
     print(f"Using only {len(df)} samples to fix class imbalance in the dataset.")
     df = df.sample(frac=1)
-    df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
+
     if fname is not None:
         new_fname = os.path.basename(fname).split(".xlsx")[0] + f"_balanced_{len(df)}.xlsx"
     else:
@@ -108,13 +108,9 @@ def get_balanced_ds(df, samples_per_class, fname = None):
 def read_from_file(fname:str):
 
     path = os.path.join(config.working_dir, fname)
-    df = pd.read_excel(path, )
+    df = pd.read_excel(path,index_col=0 )
 
     print (df.columns)
-    if "index_original" in df.columns:
-        df = df.drop("index_original", axis=1)
-
-    df.columns = ['Question', 'Reference', 'Prediction', 'llm_decisions', 'anum_decisions']
 
     return df
 
