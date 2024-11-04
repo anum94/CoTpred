@@ -2,7 +2,7 @@
     "save_csv": true,
     "llm_config": {
         "dataset": "openai/gsm8k",
-        "samples": "all",
+        "samples": 10,
         "max_new_tokens": 256,
         "togetherai": true,
         "batch_size": 1,
@@ -18,7 +18,7 @@
         "regression_labels_path": "runs/openai-gsm8k/2024-10-22_08-16-15/regression_labels.txt",
         "verbose": false,
         "class_imbalance": true,
-        "fix_class_imbalance": false,
+        "fix_class_imbalance": true,
         "hidden_layer": -1,
         "regression_model": "feed forward",
         "epochs": 25
