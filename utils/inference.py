@@ -31,14 +31,16 @@ def generate_answer(question, tokenizer, CoT, togetherai = True, model = None):
         return ""
     if CoT:
         cot_prompt = generate_cot_prompt(question)
+        max_new_tokens = 512
     else:
         cot_prompt = generate_prompt(question)
+        max_new_tokens = 50
     if togetherai:
         client = Together(api_key=os.environ.get("TOGETHER_API_KEY"))
         response = client.chat.completions.create(
             model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
             messages=[{"role": "user", "content": cot_prompt}],
-            max_tokens=50, #tokens to generate
+            max_tokens=max_new_tokens, #tokens to generate
             temperature=0,
             top_p=1,
             do_sample=False,

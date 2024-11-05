@@ -49,6 +49,7 @@ def get_gpt4_score(questions: list, references: list, predictions: list) -> list
 
 
 if __name__ == "__main__":
+    '''
     df1 = pd.read_excel("../runs/openai-gsm8k/processed_ds/openai-gsm8k2000.xlsx")
     df2 = pd.read_excel("../runs/openai-gsm8k/processed_ds/openai-gsm8k8000.xlsx")
 
@@ -62,3 +63,4 @@ if __name__ == "__main__":
     )
     df["anum_decisions"] = llm_output
     df.to_excel("../runs/openai-gsm8k/processed_ds/llama3_gsm8k_train.xlsx", index=False)
+    '''

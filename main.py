@@ -15,7 +15,6 @@ from models.feedforward import feedforward_network
 from datetime import datetime
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
-from utils.ds import get_ds
 CoT = False
 print ("Loading .env was: ", load_dotenv())
 
@@ -26,19 +25,35 @@ def get_exec_str(datestamp) -> str:
 
     ds = llm_config['dataset'].replace("/", "-")
 
-    exec_dir = os.path.join(config.working_dir, "runs", f"{ds}/{datestamp}")
+    exec_dir = os.path.join(config.working_dir, "runs", f"{ds}/{datestamp}", f"CoT_{CoT}")
     if not os.path.exists(exec_dir):
         os.makedirs(exec_dir)
 
     return exec_dir
 
+def get_ds(ds_name):
+
+
+    if ds_name == "openai/gsm8k":
+        dataset_train = load_dataset("openai/gsm8k", "main", split='train')
+        dataset_test = load_dataset("openai/gsm8k", "main", split='test')
+        dataset = concatenate_datasets([dataset_train, dataset_test])
+    elif ds_name == "deepmind/aqua_rat":
+        dataset = load_dataset("deepmind/aqua_rat", "tokenized", split='train')
+
+        def fn_aquarat(sample, _):
+            prompt = "\n One of the following is the correct answer. \n"
+            options = [' \n'.join(i) for i in sample['options']]
+            question = [q + prompt + o for q, o in zip(sample['question'], options)]
+
+            return {"question": question, "answer": sample["rationale"], "correct_option": sample["correct"]}
+
+        return dataset.map(fn_aquarat, dataset, batched=True, remove_columns=["rationale", "correct"])
+
 
 def run_inference(ds_name):
 
-    #dataset = get_ds(ds_name)
-    dataset_train = load_dataset("openai/gsm8k", "main", split='train')
-    dataset_test = load_dataset("openai/gsm8k", "main", split='test')
-    dataset = concatenate_datasets([dataset_train, dataset_test])
+    dataset = get_ds(ds_name)
 
     if llm_config["samples"] != "all":
         dataset = dataset.select([i for i in range(llm_config["samples"])])
@@ -240,7 +255,7 @@ if __name__ == '__main__':
     wandb_table = {"test_accuracy": accuracy, "#sample": len(y),
                    "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
                    "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],
-                    "weights_init": "HE"   }
+                    "weights_init": "HE" , "CoT": CoT  }
     wandb_push_json(wandb_table)
 
 
