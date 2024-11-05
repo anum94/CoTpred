@@ -121,6 +121,7 @@ def get_balanced_ds(df, samples_per_class, fname = None):
         new_fname = f"balanced_{len(df)}.xlsx"
     new_fname = os.path.join(get_exec_str(date_time), new_fname)
     df.to_excel(new_fname)
+    print(f"Saved balaced dataset to {new_fname}")
     return df
 def read_from_file(fname:str):
 
