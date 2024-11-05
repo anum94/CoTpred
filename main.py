@@ -164,7 +164,7 @@ def contruct_regression_features():
     #X = feature.mean(dim=1)
     #print (X.size())
     feature = feature.float().numpy()
-    y = pd.to_numeric(df['anum_decisions'])
+    y = pd.to_numeric(df['llm_decisions'])
 
     fname = os.path.join(get_exec_str(date_time), "regression_features.txt")
     np.savetxt(fname, feature, fmt='%d')
