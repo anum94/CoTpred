@@ -107,8 +107,10 @@ def check_class_imbalance(df: pd.DataFrame):
 
 def get_balanced_ds(df, samples_per_class, fname = None):
 
-    df_false = df[df["llm_decisions"] == 0]
+
+    df_false = df[df["llm_decisions"] == 0].head(samples_per_class)
     df_true = df[df["llm_decisions"] == 1].head(samples_per_class)
+
     df = pd.concat([df_true, df_false], ignore_index=True)
     print(f"Using only {len(df)} samples to fix class imbalance in the dataset.")
     df = df.sample(frac=1)
@@ -123,7 +125,7 @@ def get_balanced_ds(df, samples_per_class, fname = None):
 def read_from_file(fname:str):
 
     path = os.path.join(config.working_dir, fname)
-    df = pd.read_excel(path,index_col=0 )
+    df = pd.read_excel(path)
 
     print (df.columns)
 
@@ -140,7 +142,7 @@ def get_last_token_idx(inputs_ids: list) -> list:
 
     return last_token_idx
 
-def contruct_regression_features():
+def contruct_regression_features(df):
     input_sentence = list(df['Question'])
     if CoT:
         input_prompts = generate_cot_prompt(input_sentence)
@@ -209,9 +211,8 @@ if __name__ == '__main__':
 
     if llm_config["read_from_file"]:
         df = read_from_file(fname = llm_config["filename"])
-        if llm_config["fix_class_imbalance"]:
-            n_true_label, n_false_label = check_class_imbalance(df)
-            df = get_balanced_ds(df, samples_per_class=n_false_label, fname=llm_config["filename"])
+        new_file_name = llm_config["filename"]
+
     else:
         # Generate answer
         if not llm_config["togetherai"]:
@@ -222,16 +223,23 @@ if __name__ == '__main__':
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
         df, fname = run_inference(llm_config["dataset"])
-        if llm_config["fix_class_imbalance"]:
-            n_true_label, n_false_label = check_class_imbalance(df)
-            df = get_balanced_ds(df, samples_per_class=n_false_label, fname=fname)
+        new_file_name = fname
+
+    if llm_config["fix_class_imbalance"]:
+        n_true_label, n_false_label = check_class_imbalance(df)
+        if CoT:
+            samples_per_class = n_false_label
+        else:
+            samples_per_class = n_true_label
+
+        df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
 
     if llm_config["samples"] != "all":
         if llm_config["samples"] < len(df):
             df = df.head(n=llm_config["samples"])
 
     
-    if llm_config["regression_features_saved"]:
+    if llm_config["regression_features_saved"]: # read previously generated features
         feature, y = read_regression_features(llm_config["regression_features_path"], llm_config["regression_labels_path"])
     else:
         model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
@@ -242,7 +250,7 @@ if __name__ == '__main__':
 
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
-        feature , y = contruct_regression_features()
+        feature , y = contruct_regression_features(df)
 
     # Train the regression model.
     if llm_config["regression_model"] == "linear regression":
