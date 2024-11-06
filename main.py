@@ -15,7 +15,7 @@ from models.feedforward import feedforward_network
 from datetime import datetime
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
-CoT = False
+CoT = True
 print ("Loading .env was: ", load_dotenv())
 
 
@@ -35,9 +35,10 @@ def get_ds(ds_name):
 
 
     if ds_name == "openai/gsm8k":
-        dataset_train = load_dataset("openai/gsm8k", "main", split='train')
-        dataset_test = load_dataset("openai/gsm8k", "main", split='test')
-        dataset = concatenate_datasets([dataset_train, dataset_test])
+        #dataset_train = load_dataset("openai/gsm8k", "main", split='train')
+        #dataset_test = load_dataset("openai/gsm8k", "main", split='test')
+        #dataset = concatenate_datasets([dataset_train, dataset_test])
+        dataset = load_dataset("openai/gsm8k", "main", split='test')
     elif ds_name == "deepmind/aqua_rat":
         dataset = load_dataset("deepmind/aqua_rat", "tokenized", split='train')
 
