@@ -34,7 +34,7 @@ def get_gpt4_score(questions: list, references: list, predictions: list) -> list
     ]
     for prompt in tqdm(prompts):
         response = openai_client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "user", "content": prompt},
             ],
