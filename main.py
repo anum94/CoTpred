@@ -15,7 +15,7 @@ from models.feedforward import feedforward_network
 from datetime import datetime
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
-CoT = True
+
 print ("Loading .env was: ", load_dotenv())
 
 
@@ -45,9 +45,10 @@ def get_ds(ds_name):
         def fn_aquarat(sample, _):
             prompt = "\n One of the following is the correct answer. \n"
             options = [' \n'.join(i) for i in sample['options']]
-            question = [q + prompt + o for q, o in zip(sample['question'], options)]
+            answer = [prompt + o + "\n Answer Explanation:" +  r for r, o in zip(sample['rationale'], options)]
+            question = sample['question']
 
-            return {"question": question, "answer": sample["rationale"], "correct_option": sample["correct"]}
+            return {"question": question, "answer": answer, "correct_option": sample["correct"]}
 
         return dataset.map(fn_aquarat, dataset, batched=True, remove_columns=["rationale", "correct"])
 
@@ -206,6 +207,7 @@ if __name__ == '__main__':
     date_time = '{date:%Y-%m-%d_%H-%M-%S}'.format(date=datetime.now())
     llm_config = config.llm_config
     model_name = llm_config["model_hf_key"]
+    CoT = llm_config['cot']
     print(f"Starting Script with config: {llm_config}")
     print (llm_config)
     wandb_init_run(config=llm_config)

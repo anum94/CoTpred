@@ -1,0 +1,36 @@
+{
+  "os":  "macOS-14.3.1-arm64-arm-64bit",
+  "python":  "3.11.10",
+  "startedAt":  "2024-10-29T16:50:24.072733Z",
+  "args":  [
+    "--config",
+    "config.json"
+  ],
+  "program":  "/Users/anumafzal/PycharmProjects/ToTpred/main.py",
+  "codePath":  "main.py",
+  "git":  {
+    "remote":  "https://github.com/anum94/ToTpred.git",
+    "commit":  "ee97944359730754a99546c5fd0a8a00f74d70ac"
+  },
+  "email":  "anum.afzal@tum.de",
+  "root":  "/Users/anumafzal/PycharmProjects/ToTpred",
+  "host":  "Anums-MBP.fritz.box",
+  "username":  "anumafzal",
+  "executable":  "/Users/anumafzal/PycharmProjects/ToTpred/py3.11/bin/python",
+  "codePathLocal":  "main.py",
+  "cpu_count":  8,
+  "cpu_count_logical":  8,
+  "disk":  {
+    "/":  {
+      "total":  "994662584320",
+      "used":  "389853392896"
+    }
+  },
+  "memory":  {
+    "total":  "17179869184"
+  },
+  "cpu":  {
+    "count":  8,
+    "countLogical":  8
+  }
+}

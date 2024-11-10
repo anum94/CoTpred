@@ -1,0 +1,42 @@
+diff --git a/runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_True/deepmind-aqua_rat.xlsx b/runs/processed_ds/deepmind-aqua_rat/CoT_True/deepmind-aqua_rat.xlsx
+rename from runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_True/deepmind-aqua_rat.xlsx
+rename to runs/processed_ds/deepmind-aqua_rat/CoT_True/deepmind-aqua_rat.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_True/deepmind-aqua_rat_balanced_11278.xlsx b/runs/processed_ds/deepmind-aqua_rat/CoT_True/deepmind-aqua_rat_balanced_11278.xlsx
+rename from runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_True/deepmind-aqua_rat_balanced_11278.xlsx
+rename to runs/processed_ds/deepmind-aqua_rat/CoT_True/deepmind-aqua_rat_balanced_11278.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/llama3_gsm8k_balanced.xlsx b/runs/processed_ds/gsm8k/CoT_True/llama3_gsm8k_balanced.xlsx
+rename from runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/llama3_gsm8k_balanced.xlsx
+rename to runs/processed_ds/gsm8k/CoT_True/llama3_gsm8k_balanced.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_False/deepmind-aqua_rat_balanced_8514.xlsx b/runs/processed_ds/deepmind-aqua_rat/CoT_False/deepmind-aqua_rat_balanced_8514.xlsx
+rename from runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_False/deepmind-aqua_rat_balanced_8514.xlsx
+rename to runs/processed_ds/deepmind-aqua_rat/CoT_False/deepmind-aqua_rat_balanced_8514.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_True/log-15000-cot.out b/runs/processed_ds/deepmind-aqua_rat/CoT_True/log-15000-cot.out
+rename from runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_True/log-15000-cot.out
+rename to runs/processed_ds/deepmind-aqua_rat/CoT_True/log-15000-cot.out
+diff --git a/runs/openai-gsm8k/processed_ds/gsm8k/CoT_False/openai-gsm8k_balanced_5772.xlsx b/runs/processed_ds/gsm8k/CoT_False/openai-gsm8k_balanced_5772.xlsx
+rename from runs/openai-gsm8k/processed_ds/gsm8k/CoT_False/openai-gsm8k_balanced_5772.xlsx
+rename to runs/processed_ds/gsm8k/CoT_False/openai-gsm8k_balanced_5772.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/gsm8k/CoT_False/openai-gsm8k_no_cot_train_test.xlsx b/runs/processed_ds/gsm8k/CoT_False/openai-gsm8k_no_cot_train_test.xlsx
+rename from runs/openai-gsm8k/processed_ds/gsm8k/CoT_False/openai-gsm8k_no_cot_train_test.xlsx
+rename to runs/processed_ds/gsm8k/CoT_False/openai-gsm8k_no_cot_train_test.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/openai-gsm8k-test-cot.xlsx b/runs/processed_ds/gsm8k/CoT_True/openai-gsm8k-test-cot.xlsx
+rename from runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/openai-gsm8k-test-cot.xlsx
+rename to runs/processed_ds/gsm8k/CoT_True/openai-gsm8k-test-cot.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_cot.xlsx b/runs/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_cot.xlsx
+rename from runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_cot.xlsx
+rename to runs/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_cot.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_False/log-15000-no-cot.out b/runs/processed_ds/deepmind-aqua_rat/CoT_False/log-15000-no-cot.out
+rename from runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_False/log-15000-no-cot.out
+rename to runs/processed_ds/deepmind-aqua_rat/CoT_False/log-15000-no-cot.out
+diff --git a/runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_False/deepmind-aqua_rat.xlsx b/runs/processed_ds/deepmind-aqua_rat/CoT_False/deepmind-aqua_rat.xlsx
+rename from runs/openai-gsm8k/processed_ds/deepmind-aqua_rat/CoT_False/deepmind-aqua_rat.xlsx
+rename to runs/processed_ds/deepmind-aqua_rat/CoT_False/deepmind-aqua_rat.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_balanced.xlsx b/runs/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_balanced.xlsx
+rename from runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_balanced.xlsx
+rename to runs/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_balanced.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/openai-gsm8k_train_test_cot.xlsx b/runs/processed_ds/gsm8k/CoT_True/openai-gsm8k_train_test_cot.xlsx
+rename from runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/openai-gsm8k_train_test_cot.xlsx
+rename to runs/processed_ds/gsm8k/CoT_True/openai-gsm8k_train_test_cot.xlsx
+diff --git a/runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_test_balanced.xlsx b/runs/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_test_balanced.xlsx
+rename from runs/openai-gsm8k/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_test_balanced.xlsx
+rename to runs/processed_ds/gsm8k/CoT_True/llama3_gsm8k_train_test_balanced.xlsx

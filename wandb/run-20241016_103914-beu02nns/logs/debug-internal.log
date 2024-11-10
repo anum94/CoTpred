@@ -1,0 +1,18 @@
+{"time":"2024-10-16T10:39:14.773583+02:00","level":"INFO","msg":"using version","core version":"0.18.3"}
+{"time":"2024-10-16T10:39:14.773605+02:00","level":"INFO","msg":"created symlink","path":"/Users/anumafzal/PycharmProjects/ToTpred/wandb/run-20241016_103914-beu02nns/logs/debug-core.log"}
+{"time":"2024-10-16T10:39:14.778096+02:00","level":"ERROR","msg":"dialing: google: could not find default credentials. See https://cloud.google.com/docs/authentication/external/set-up-adc for more information"}
+{"time":"2024-10-16T10:39:14.792623+02:00","level":"INFO","msg":"created new stream","id":"beu02nns"}
+{"time":"2024-10-16T10:39:14.792677+02:00","level":"INFO","msg":"stream: started","id":"beu02nns"}
+{"time":"2024-10-16T10:39:14.792713+02:00","level":"INFO","msg":"sender: started","stream_id":{"value":"beu02nns"}}
+{"time":"2024-10-16T10:39:14.792679+02:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"beu02nns"}}
+{"time":"2024-10-16T10:39:14.792724+02:00","level":"INFO","msg":"handler: started","stream_id":{"value":"beu02nns"}}
+{"time":"2024-10-16T10:39:15.070664+02:00","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-10-16T10:39:15.07324+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-10-16T10:39:15.633638+02:00","level":"INFO","msg":"stream: closing","id":"beu02nns"}
+{"time":"2024-10-16T10:39:15.634156+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-10-16T10:39:15.634185+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-10-16T10:39:18.209262+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-10-16T10:39:18.417458+02:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"beu02nns"}}
+{"time":"2024-10-16T10:39:18.417478+02:00","level":"INFO","msg":"sender: closed","stream_id":{"value":"beu02nns"}}
+{"time":"2024-10-16T10:39:18.41747+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"beu02nns"}}
+{"time":"2024-10-16T10:39:18.417757+02:00","level":"INFO","msg":"stream: closed","id":"beu02nns"}

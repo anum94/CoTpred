@@ -1,0 +1,18 @@
+{"time":"2024-10-22T17:32:02.395154+02:00","level":"INFO","msg":"using version","core version":"0.18.3"}
+{"time":"2024-10-22T17:32:02.395198+02:00","level":"INFO","msg":"created symlink","path":"/Users/anumafzal/PycharmProjects/ToTpred/wandb/run-20241022_173202-wvth186r/logs/debug-core.log"}
+{"time":"2024-10-22T17:32:02.418572+02:00","level":"ERROR","msg":"dialing: google: could not find default credentials. See https://cloud.google.com/docs/authentication/external/set-up-adc for more information"}
+{"time":"2024-10-22T17:32:02.429941+02:00","level":"INFO","msg":"created new stream","id":"wvth186r"}
+{"time":"2024-10-22T17:32:02.429977+02:00","level":"INFO","msg":"stream: started","id":"wvth186r"}
+{"time":"2024-10-22T17:32:02.430002+02:00","level":"INFO","msg":"sender: started","stream_id":{"value":"wvth186r"}}
+{"time":"2024-10-22T17:32:02.429983+02:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"wvth186r"}}
+{"time":"2024-10-22T17:32:02.430014+02:00","level":"INFO","msg":"handler: started","stream_id":{"value":"wvth186r"}}
+{"time":"2024-10-22T17:32:02.753554+02:00","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-10-22T17:32:02.755769+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-10-22T17:32:02.860144+02:00","level":"INFO","msg":"stream: closing","id":"wvth186r"}
+{"time":"2024-10-22T17:32:02.860507+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-10-22T17:32:02.860525+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-10-22T17:32:06.36495+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-10-22T17:32:06.665881+02:00","level":"INFO","msg":"sender: closed","stream_id":{"value":"wvth186r"}}
+{"time":"2024-10-22T17:32:06.665877+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"wvth186r"}}
+{"time":"2024-10-22T17:32:06.665868+02:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"wvth186r"}}
+{"time":"2024-10-22T17:32:06.666105+02:00","level":"INFO","msg":"stream: closed","id":"wvth186r"}

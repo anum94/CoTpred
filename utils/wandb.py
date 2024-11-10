@@ -16,7 +16,7 @@ def wandb_push_json(table_json:json):
     col_names = list(table_json.keys())
     table = wandb.Table(columns=col_names)
     values = list(table_json.values())
-    table.add_data(values[0], values[1], values[2], values[3], values[4], values[5], values[6])
+    table.add_data(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7])
     wandb.log({"metrics_table": table}, commit=True)
 
 def wandb_plot_line(x_values, y_values, title, x_caption, y_caption):

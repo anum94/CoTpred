@@ -1,8 +1,9 @@
 {
     "save_csv": true,
     "llm_config": {
-        "dataset": "openai/gsm8k",
-        "samples": "all",
+        "dataset": "deepmind/aqua_rat",
+        "samples": 15000,
+        "cot": true,
         "max_new_tokens": 256,
         "togetherai": true,
         "batch_size": 1,
@@ -12,13 +13,13 @@
         "load_in_4bit": true,
         "device_map": "auto",
         "read_from_file": false,
-        "filename": "runs/openai-gsm8k/processed_ds/openai-gsm8k-train-test_no_cot.xlsx",
+        "filename": "runs/processed_ds/gsm8k/CoT_False/openai-gsm8k_no_cot_train_test_balanced_5772.xlsx",
         "regression_features_saved": false,
         "regression_features_path": "runs/openai-gsm8k/2024-11-05_12-02-54/regression_features.txt",
         "regression_labels_path": "runs/openai-gsm8k/2024-11-05_12-02-54/regression_labels.txt",
         "verbose": false,
-        "class_imbalance": true,
-        "fix_class_imbalance": true,
+        "class_imbalance": false,
+        "fix_class_imbalance": false,
         "hidden_layer": -1,
         "regression_model": "feed forward",
         "epochs": 25

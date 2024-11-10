@@ -1,0 +1,18 @@
+{"time":"2024-11-04T16:00:44.086139+01:00","level":"INFO","msg":"using version","core version":"0.18.3"}
+{"time":"2024-11-04T16:00:44.08618+01:00","level":"INFO","msg":"created symlink","path":"/Users/anumafzal/PycharmProjects/ToTpred/wandb/run-20241104_160044-st0loxc4/logs/debug-core.log"}
+{"time":"2024-11-04T16:00:44.087721+01:00","level":"ERROR","msg":"dialing: google: could not find default credentials. See https://cloud.google.com/docs/authentication/external/set-up-adc for more information"}
+{"time":"2024-11-04T16:00:44.09395+01:00","level":"INFO","msg":"created new stream","id":"st0loxc4"}
+{"time":"2024-11-04T16:00:44.094006+01:00","level":"INFO","msg":"stream: started","id":"st0loxc4"}
+{"time":"2024-11-04T16:00:44.094032+01:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"st0loxc4"}}
+{"time":"2024-11-04T16:00:44.094008+01:00","level":"INFO","msg":"handler: started","stream_id":{"value":"st0loxc4"}}
+{"time":"2024-11-04T16:00:44.09403+01:00","level":"INFO","msg":"sender: started","stream_id":{"value":"st0loxc4"}}
+{"time":"2024-11-04T16:00:44.383861+01:00","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-11-04T16:00:44.385509+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-11-04T16:00:44.690637+01:00","level":"INFO","msg":"stream: closing","id":"st0loxc4"}
+{"time":"2024-11-04T16:00:44.943654+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-11-04T16:00:44.94373+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-11-04T16:00:47.725287+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-11-04T16:00:47.924832+01:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"st0loxc4"}}
+{"time":"2024-11-04T16:00:47.924871+01:00","level":"INFO","msg":"sender: closed","stream_id":{"value":"st0loxc4"}}
+{"time":"2024-11-04T16:00:47.924854+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"st0loxc4"}}
+{"time":"2024-11-04T16:00:47.926055+01:00","level":"INFO","msg":"stream: closed","id":"st0loxc4"}

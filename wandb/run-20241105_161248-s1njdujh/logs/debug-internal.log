@@ -1,0 +1,53 @@
+{"time":"2024-11-05T16:12:48.9124+01:00","level":"INFO","msg":"using version","core version":"0.18.3"}
+{"time":"2024-11-05T16:12:48.912472+01:00","level":"INFO","msg":"created symlink","path":"/Users/anumafzal/PycharmProjects/ToTpred/wandb/run-20241105_161248-s1njdujh/logs/debug-core.log"}
+{"time":"2024-11-05T16:12:48.948581+01:00","level":"ERROR","msg":"dialing: google: could not find default credentials. See https://cloud.google.com/docs/authentication/external/set-up-adc for more information"}
+{"time":"2024-11-05T16:12:48.959935+01:00","level":"INFO","msg":"created new stream","id":"s1njdujh"}
+{"time":"2024-11-05T16:12:48.95998+01:00","level":"INFO","msg":"stream: started","id":"s1njdujh"}
+{"time":"2024-11-05T16:12:48.959989+01:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"s1njdujh"}}
+{"time":"2024-11-05T16:12:48.960067+01:00","level":"INFO","msg":"handler: started","stream_id":{"value":"s1njdujh"}}
+{"time":"2024-11-05T16:12:48.960066+01:00","level":"INFO","msg":"sender: started","stream_id":{"value":"s1njdujh"}}
+{"time":"2024-11-05T16:12:50.25515+01:00","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-11-05T16:12:50.257503+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-11-05T16:13:00.275181+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:13:10.305989+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:13:20.288574+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:13:30.305043+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:13:40.29977+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:13:50.301598+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:14:00.302135+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:14:10.292724+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:14:20.30496+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:14:30.274981+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:14:40.390456+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:14:50.278818+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:15:00.27931+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:15:10.279146+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:15:20.331618+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:15:30.278656+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:15:40.282402+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:15:50.278554+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:16:00.336826+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:16:10.274705+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:16:20.311518+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:16:30.290834+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:16:40.280337+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:16:50.486851+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:17:00.274243+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:17:10.377103+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:17:20.277782+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:17:30.275779+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:17:40.343542+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:17:50.275866+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:18:00.290781+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:18:10.283407+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:18:20.280067+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:18:30.282412+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:18:40.297403+01:00","level":"ERROR","msg":"monitor: gpu: error sampling metrics: signal: trace/BPT trap"}
+{"time":"2024-11-05T16:18:48.542993+01:00","level":"INFO","msg":"stream: closing","id":"s1njdujh"}
+{"time":"2024-11-05T16:18:48.543345+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-11-05T16:18:48.543385+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-11-05T16:18:52.695277+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-11-05T16:18:53.749391+01:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"s1njdujh"}}
+{"time":"2024-11-05T16:18:53.749469+01:00","level":"INFO","msg":"sender: closed","stream_id":{"value":"s1njdujh"}}
+{"time":"2024-11-05T16:18:53.749442+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"s1njdujh"}}
+{"time":"2024-11-05T16:18:53.749765+01:00","level":"INFO","msg":"stream: closed","id":"s1njdujh"}
