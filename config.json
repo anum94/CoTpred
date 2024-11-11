@@ -1,7 +1,6 @@
 {
-    "save_csv": true,
     "llm_config": {
-        "dataset": "openai/gsm8k",
+        "dataset": "deepmind/aqua_rat",
         "samples": "all",
         "max_new_tokens": 256,
         "togetherai": true,
@@ -18,15 +17,10 @@
         "regression_labels_path": "runs/openai-gsm8k/2024-11-05_12-02-54/regression_labels.txt",
         "verbose": false,
         "class_imbalance": true,
-        "fix_class_imbalance": true,
+        "fix_class_imbalance": false,
         "hidden_layer": -1,
         "regression_model": "feed forward",
         "epochs": 25
 
-    },
-    "wandb_config": {
-        "entity": "nlp-sebis",
-        "wandb_mode": "online",
-        "wandb_project_name": "promtp-tuning-summarization"
     }
 }

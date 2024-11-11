@@ -15,7 +15,7 @@ from models.feedforward import feedforward_network
 from datetime import datetime
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
-CoT = True
+CoT = False
 print ("Loading .env was: ", load_dotenv())
 
 
@@ -58,6 +58,8 @@ def run_inference(ds_name):
 
     if llm_config["samples"] != "all":
         dataset = dataset.select([i for i in range(llm_config["samples"])])
+    dataset = dataset.select([i for i in range(95000, 97000)])
+
 
     if llm_config["togetherai"]:
         print ("Running Inference using Together AI")

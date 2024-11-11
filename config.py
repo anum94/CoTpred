@@ -58,7 +58,6 @@ class Config:
             with open(args["config"], "r") as fp:
                 config = load(fp)
                 self.llm_config = config["llm_config"]
-                self.wandb_config = config["wandb_config"]
 
     def configure_env(self) -> str:
         load_dotenv()
