@@ -15,11 +15,11 @@ def generate_cot_prompt(questions):
 
 def generate_prompt(questions):
     if isinstance(questions, str):
-        cot_prompts = (f"Provide answer of the given question without any reasoning or explanations."
-                       f"\nQuestion: {questions} \n Generate the answer in few words.  \n Answer:\n")
+        cot_prompts = (f"Generate answer of the question in the numberic form without showing intermediate calculation steps."
+                       f"\nQuestion: {questions}  \n Answer:\n")
     else:
-        cot_prompts = [(f"Provide answer of the given question without any reasoning or explanations."
-                    f"Question: {question} \n Generate the answer in few words. \n Answer:\n") for question in questions]
+        cot_prompts = [(f"Generate answer of the given question without any chain of thought prompting. Do not give any reasoning or explanations as a part of the output."
+                    f"Question: {question} \n Please generate the answer in few words. \n Answer:\n") for question in questions]
     #print (f"CoT Prompt: {cot_prompts[0}\n")
     return cot_prompts
 
@@ -31,10 +31,10 @@ def generate_answer(question, tokenizer, CoT, togetherai = True, model = None):
         return ""
     if CoT:
         cot_prompt = generate_cot_prompt(question)
-        max_new_tokens = 256
+        max_new_tokens = 512
     else:
         cot_prompt = generate_prompt(question)
-        max_new_tokens = 15
+        max_new_tokens = 50
     if togetherai:
         client = Together(api_key=os.environ.get("TOGETHER_API_KEY"))
         response = client.chat.completions.create(

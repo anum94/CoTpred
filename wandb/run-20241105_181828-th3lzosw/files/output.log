@@ -1,6 +1,0 @@
-Index(['Reference', 'Prediction', 'anum_decisions', 'llm_decisions'], dtype='object')
- True Labels: 2886, False Labels: 5865
-LLM can generate correct answer for 32.97908810421666% of the samples
-Using only 5772 samples to fix class imbalance in the dataset.
-Loading checkpoint shards: 100%|██████████| 4/4 [00:14<00:00,  3.72s/it]
-Some parameters are on the meta device because they were offloaded to the disk.
