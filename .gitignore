@@ -1,4 +1,7 @@
 cred
 .env
-py3.11/
 /py3.11/
+wandb/
+runs/.DS_Store
+/wandb/
+.idea/
