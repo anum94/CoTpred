@@ -13,10 +13,10 @@ from models.feedforward import feedforward_network
 from datetime import datetime
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
-CoT = False
+CoT = True
 print ("Loading .env was: ", load_dotenv())
 
-
+print ("Test set: samples 91k - 95k Cot:", CoT)
 
 
 def get_exec_str(datestamp) -> str:
@@ -56,7 +56,7 @@ def run_inference(ds_name):
 
     if llm_config["samples"] != "all":
         dataset = dataset.select([i for i in range(llm_config["samples"])])
-    #dataset = dataset.select([i for i in range(95000, 97000)])
+    dataset = dataset.select([i for i in range(91000, 95000)])
 
 
     if llm_config["togetherai"]:
@@ -144,7 +144,7 @@ def get_last_token_idx(inputs_ids: list) -> list:
 
     return last_token_idx
 
-def contruct_regression_features(df):
+def contruct_regression_features(df, date_time):
     input_sentence = list(df['Question'])
     if CoT:
         input_prompts = generate_cot_prompt(input_sentence)
@@ -252,7 +252,7 @@ if __name__ == '__main__':
 
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
-        feature , y = contruct_regression_features(df)
+        feature , y = contruct_regression_features(df, date_time=date_time)
 
     # Train the regression model.
     if llm_config["regression_model"] == "linear regression":
