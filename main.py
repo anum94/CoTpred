@@ -5,11 +5,9 @@ from utils.wandb import wandb_init_run, wandb_push_json, wandb_push_table
 import os
 from config import config
 from tqdm import tqdm
-import sys, logging
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
-from openai import OpenAI, BadRequestError
 from models.regression import logistic_regression
 from models.feedforward import feedforward_network
 from datetime import datetime
@@ -45,9 +43,9 @@ def get_ds(ds_name):
         def fn_aquarat(sample, _):
             prompt = "\n One of the following is the correct answer. \n"
             options = [' \n'.join(i) for i in sample['options']]
-            question = [q + prompt + o for q, o in zip(sample['question'], options)]
+            answer = [ prompt + o + a for a, o in zip(sample['rationale'], options)]
 
-            return {"question": question, "answer": sample["rationale"], "correct_option": sample["correct"]}
+            return {"question": sample["question"], "answer": answer, "correct_option": sample["correct"]}
 
         return dataset.map(fn_aquarat, dataset, batched=True, remove_columns=["rationale", "correct"])
 
@@ -58,7 +56,7 @@ def run_inference(ds_name):
 
     if llm_config["samples"] != "all":
         dataset = dataset.select([i for i in range(llm_config["samples"])])
-    dataset = dataset.select([i for i in range(95000, 97000)])
+    #dataset = dataset.select([i for i in range(95000, 97000)])
 
 
     if llm_config["togetherai"]:

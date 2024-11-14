@@ -34,7 +34,7 @@ def get_gpt4_score(questions: list, references: list, predictions: list) -> list
     ]
     for prompt in tqdm(prompts):
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {"role": "user", "content": prompt},
             ],
@@ -49,11 +49,11 @@ def get_gpt4_score(questions: list, references: list, predictions: list) -> list
 
 
 if __name__ == "__main__":
-    '''
-    df1 = pd.read_excel("../runs/openai-gsm8k/processed_ds/openai-gsm8k2000.xlsx")
-    df2 = pd.read_excel("../runs/openai-gsm8k/processed_ds/openai-gsm8k8000.xlsx")
 
-    df = pd.concat([df1, df2], ignore_index=True)
+    df = pd.read_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/deepmind-aqua_rat/2024-11-11_22-51-20/CoT_True/deepmind-aqua_rat.xlsx")
+
+
+    #df = pd.concat([df1, df2], ignore_index=True)
     questions = list(df["Question"])
     references = list(df["Reference"])
     predictions = list(df["Prediction"])
@@ -61,6 +61,6 @@ if __name__ == "__main__":
     llm_output = get_gpt4_score(
         questions=questions, references=references, predictions=predictions
     )
-    df["anum_decisions"] = llm_output
-    df.to_excel("../runs/openai-gsm8k/processed_ds/llama3_gsm8k_train.xlsx", index=False)
-    '''
+    df["llm_decisions"] = llm_output
+    df.to_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/deepmind-aqua_rat/2024-11-11_22-51-20/CoT_True/deepmind-aqua_rat_gpt_4o.xlsx", index=False)
+
