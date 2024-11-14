@@ -1,7 +1,10 @@
+from os import mkdir
+
 from transformers import AutoTokenizer, AutoModelForCausalLM #, BitsAndBytesConfig
 from datasets import load_dataset, concatenate_datasets
 import torch
 from utils.wandb import wandb_init_run, wandb_push_json, wandb_push_table
+from together import Together
 import os
 from config import config
 from tqdm import tqdm
@@ -200,7 +203,32 @@ def read_regression_features(feature_path, label_path):
     y = np.loadtxt(label_path, dtype=int)
     return feature, y
 
+def get_baseline_features(df):
+    features = []
+    #df = df.head(20)
+    model = llm_config["baseline_model"]
+    print (f"Generating Embedding using Together AI using {model}")
+    for question in tqdm(df['Question']):
+        client = Together(
+            api_key=os.environ.get("TOGETHER_API_KEY"))
+        response = client.embeddings.create(
+            model=model,
+            input=question
+        )
+        embedding = response.data[0].embedding
+        features.append(embedding)
 
+    os.makedirs(os.path.join(get_exec_str(date_time),model))
+    fname = os.path.join(get_exec_str(date_time),model, "regression_features.txt")
+    features = np.array(features)
+    np.savetxt(fname, features, fmt='%d')
+    print(f"Saved Regression Features at {fname}")
+
+    fname = os.path.join(get_exec_str(date_time),model, "regression_labels.txt")
+    y = np.array(df['llm_decisions'])
+    np.savetxt(fname, y, fmt='%d')
+    print(f"Saved Regression Labels at {fname}")
+    return features, y
 if __name__ == '__main__':
 
     date_time = '{date:%Y-%m-%d_%H-%M-%S}'.format(date=datetime.now())
@@ -241,18 +269,32 @@ if __name__ == '__main__':
             df = df.head(n=llm_config["samples"])
 
     
-    if llm_config["regression_features_saved"]: # read previously generated features
-        feature, y = read_regression_features(llm_config["regression_features_path"], llm_config["regression_labels_path"])
-    else:
-        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
-                                                 torch_dtype=torch.bfloat16, output_hidden_states=True,
-                                                 return_dict_in_generate = True,
-                                                  # load_in_8bit=True
-                                                      )
+    if llm_config["baseline"]:
+        # get baseline features
+        feature, y = get_baseline_features(df)
+        wandb_table = { "#sample": len(df),
+                       "hidden_layer": "N/A", "reg-model": llm_config["regression_model"],
+                       "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],
+                       "weights_init": "HE", "CoT": llm_config["baseline_model"]}
 
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        tokenizer.pad_token_id = tokenizer.eos_token_id
-        feature , y = contruct_regression_features(df, date_time=date_time)
+    else:
+
+        if llm_config["regression_features_saved"]: # read previously generated features
+            feature, y = read_regression_features(llm_config["regression_features_path"], llm_config["regression_labels_path"])
+        else:
+            model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
+                                                     torch_dtype=torch.bfloat16, output_hidden_states=True,
+                                                     return_dict_in_generate = True,
+                                                      # load_in_8bit=True
+                                                          )
+
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            feature , y = contruct_regression_features(df, date_time=date_time)
+        wandb_table = {"#sample": len(y),
+                           "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
+                           "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],
+                           "weights_init": "HE", "CoT": CoT}
 
     # Train the regression model.
     if llm_config["regression_model"] == "linear regression":
@@ -262,10 +304,8 @@ if __name__ == '__main__':
         accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"])
 
 
-    wandb_table = {"test_accuracy": accuracy, "#sample": len(y),
-                   "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
-                   "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],
-                    "weights_init": "HE" , "CoT": CoT  }
+
+    wandb_table["test_accuracy"] = accuracy
     wandb_push_json(wandb_table)
 
 

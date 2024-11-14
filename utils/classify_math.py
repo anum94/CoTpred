@@ -50,12 +50,12 @@ def get_gpt4_score(questions: list, references: list, predictions: list) -> list
 
 if __name__ == "__main__":
 
-    df2 = pd.read_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/deepmind-aqua_rat/2024-11-14_13-39-12/CoT_False/deepmind-aqua_rat.xlsx")
-    df1 = pd.read_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/without_options/CoT_False/deepmind-aqua_rat_gpt_4o.xlsx")
+    df2 = pd.read_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/deepmind-aqua_rat.xlsx")
+    df1 = pd.read_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/deepmind-aqua_rat/2024-11-14_16-14-47/CoT_True/deepmind-aqua_rat.xlsx")
 
     df = pd.concat([df1, df2], ignore_index=True)
 
-    df.to_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/without_options/CoT_False/deepmind-aqua_rat_25k.xlsx")
+    df.to_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/deepmind-aqua_rat_6k.xlsx")
     questions = list(df["Question"])
     references = list(df["Reference"])
     predictions = list(df["Prediction"])

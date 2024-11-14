@@ -32,7 +32,7 @@ def contruct_regression_features(df, folder_path, CoT):
     tokenizer.pad_token_id = tokenizer.eos_token_id
     inputs = tokenizer(input_prompts, padding=True, truncation=True, return_tensors="pt")
     last_token_indices = get_last_token_idx(inputs['input_ids'].tolist())
-    batch_size = 1
+    batch_size = 4
 
     # Run forward pass with a batch size of 2
     # Ensure inputs are divided as per batch size
@@ -76,8 +76,8 @@ def contruct_regression_features(df, folder_path, CoT):
 def update_labels(y):
     pass
 
-test_no_cot_path= "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_False/deepmind-aqua_rat.xlsx"
-test_cot_path = "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/deepmind-aqua_rat.xlsx"
+test_no_cot_path= "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_False/deepmind-aqua_rat_6k.xlsx"
+test_cot_path = "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/deepmind-aqua_rat_6k.xlsx"
 
 
 df_no_cot = pd.read_excel(test_no_cot_path)
@@ -126,10 +126,10 @@ print (f"balance test set has {len(df)} samples.")
 agreements = [True if a==b else False for a,b in zip(df['llm_decisions_no_cot'], df['llm_decisions_cot'])]
 
 df = df.sample(frac=1)
-df.to_excel(f"/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/balanced_{len(df)}_2k.xlsx")
-
-folder_path = "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/"
+#df.to_excel(f"/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/balanced_{len(df)}_6k.xlsx")
 CoT = True
+folder_path = f"/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/"
+
 contruct_regression_features(df, folder_path, CoT)
 
 
