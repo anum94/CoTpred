@@ -13,7 +13,7 @@ from models.feedforward import feedforward_network
 from datetime import datetime
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
-CoT = True
+CoT = False
 print ("Loading .env was: ", load_dotenv())
 
 print ("Test set: samples 91k - 95k Cot:", CoT)
