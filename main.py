@@ -17,6 +17,7 @@ from datetime import datetime
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
 CoT = True
+with_options = True
 print ("Loading .env was: ", load_dotenv())
 
 
@@ -44,9 +45,16 @@ def get_ds(ds_name):
         def fn_aquarat(sample, _):
             prompt = "\n One of the following is the correct answer. \n"
             options = [' \n'.join(i) for i in sample['options']]
-            answer = [ prompt + o + a for a, o in zip(sample['rationale'], options)]
 
-            return {"question": sample["question"], "answer": answer, "correct_option": sample["correct"]}
+            if with_options:
+                question = [q + prompt + o for q, o in zip(sample['question'], options)]
+
+                return {"question": question, "answer": sample["rationale"], "correct_option": sample["correct"]}
+            else:
+                answer = [ prompt + o + a for a, o in zip(sample['rationale'], options)]
+
+                return {"question": sample["question"], "answer": answer, "correct_option": sample["correct"]}
+
 
         return dataset.map(fn_aquarat, dataset, batched=True, remove_columns=["rationale", "correct"])
 
@@ -57,7 +65,7 @@ def run_inference(ds_name):
 
     if llm_config["samples"] != "all":
         dataset = dataset.select([i for i in range(llm_config["samples"])])
-    dataset = dataset.select([i for i in range(91000, 95000)])
+    #dataset = dataset.select([i for i in range(91000, 95000)])
 
 
     if llm_config["togetherai"]:

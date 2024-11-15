@@ -1,7 +1,7 @@
 {
     "llm_config": {
         "dataset": "deepmind/aqua_rat",
-        "samples": "all",
+        "samples": 15000,
         "max_new_tokens": 256,
         "togetherai": true,
         "batch_size": 1,
@@ -12,7 +12,7 @@
         "load_in_8bit": false,
         "load_in_4bit": false,
         "device_map": "auto",
-        "read_from_file": true,
+        "read_from_file": false,
         "filename": "runs/processed_ds/deepmind-aqua_rat/without_options/CoT_True/deepmind-aqua_rat_gpt_4o.xlsx",
         "regression_features_saved": false,
         "regression_features_path": "runs/openai-gsm8k/2024-11-05_12-02-54/regression_features.txt",
