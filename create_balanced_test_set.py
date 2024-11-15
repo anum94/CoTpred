@@ -2,16 +2,20 @@ import pandas as pd
 import numpy as np
 import os
 import torch
+import tensorflow as tf
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from main import generate_prompt, generate_cot_prompt
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
 model_name = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
 
 def update_labels(folder_path, decisions):
 
-    fname = os.path.join(folder_path, "regression_labels.txt")
+    fname = os.path.join(folder_path, "regression_labels_labelled.txt")
+    decisions = [str(d) for d in decisions]
     np.savetxt(fname, np.array(decisions), fmt='%d')
     print(f"Saved Regression Labels at {fname}")
+    return fname
 
 def contruct_regression_features(df, folder_path, CoT):
     def get_last_token_idx(inputs_ids: list) -> list:
@@ -79,8 +83,68 @@ def contruct_regression_features(df, folder_path, CoT):
     print(f"Saved Regression Labels at {fname}")
 
     return feature, y
-'''
+def compute_metrics(predictions, true_labels, pred_prob):
 
+    # Calculate Precision
+    precision = precision_score(true_labels, predictions)
+    print(f'Precision: {precision}')
+
+    # Calculate Recall
+    recall = recall_score(true_labels, predictions)
+    print(f'Recall: {recall}')
+
+    # Calculate F1 Score
+    f1 = f1_score(true_labels, predictions)
+    print(f'F1 Score: {f1}')
+
+    # Calculate Confusion Matrix
+    conf_matrix = confusion_matrix(true_labels, predictions)
+    print(f'Confusion Matrix:\n{conf_matrix}')
+
+    # Calculate AUC
+    auc = roc_auc_score(true_labels, pred_prob)
+    print(f'Area Under Curve (AUC): {auc}')
+def evaluate_model(model_path, feature_path, label_path, n = None, outfile = None, decisions = None):
+
+    X_test = np.loadtxt(feature_path, dtype=int)
+    if decisions is None:
+        y_test = np.loadtxt(label_path, dtype=int)
+    else:
+
+        y_test = np.array(decisions, dtype=int)
+    if n is not None:
+        X_test = X_test[:n]
+        y_test = y_test[:n]
+    best_model = tf.keras.models.load_model(model_path)
+
+    # Evaluate the model
+    loss, accuracy = best_model.evaluate(X_test, y_test)
+    print(f'Test accuracy: {accuracy:.4f}')
+
+    # Get predictions
+    log_prob = best_model.predict(X_test, verbose=1)
+    pred = (log_prob > 0.5).astype("int32")
+
+    compute_metrics(predictions=pred, true_labels=y_test, pred_prob = log_prob)
+    agreements = [True if a == b else False for a, b in zip(pred, y_test)]
+    results = pd.DataFrame()
+    results['agreements'] = agreements
+    if outfile is not None:
+        dir =  os.path.dirname(model_path)
+
+        if n is not None:
+            file = os.path.join(dir, str(n),outfile)
+        else:
+            file = os.path.join(dir, outfile)
+
+        results.to_excel(file)
+        print (file)
+
+
+    return accuracy , loss
+
+
+'''
 test_no_cot_path= "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_False/deepmind-aqua_rat_6k.xlsx"
 test_cot_path = "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/deepmind-aqua_rat_6k.xlsx"
 
@@ -100,8 +164,11 @@ df_cot.columns = [ 'Prediction_cot', 'anum_decisions_cot','llm_decisions_cot']
 
 df = pd.concat([df_no_cot, df_cot], axis=1)
 agreements = [True if a==b else False for a,b in zip(df['llm_decisions_no_cot'], df['llm_decisions_cot'])]
-print("Agreement: ",agreements.count(True), f" ({agreements.count(True)*100/len(df)}%)")
-print("Disagreement: ",agreements.count(False), f" ({agreements.count(False)*100/len(df)})%")
+cot_true_no_cot_true_index = df.index[(df['llm_decisions_cot'] == 1) & (df['llm_decisions_no_cot'] == 1)].tolist()
+cot_false_no_cot_false_index = df.index[(df['llm_decisions_cot'] == 0) & (df['llm_decisions_no_cot'] == 0)].tolist()
+
+print("Both can solve: ",len(cot_true_no_cot_true_index), f" ({len(cot_true_no_cot_true_index)*100/len(df)}%)")
+print("both cannot solve: ",len(cot_false_no_cot_false_index), f" ({len(cot_false_no_cot_false_index)*100/len(df)})%")
 
 
 cot_true_no_cot_false_index = df.index[(df['llm_decisions_cot'] == 1) & (df['llm_decisions_no_cot'] == 0)].tolist()
@@ -132,16 +199,25 @@ agreements = [True if a==b else False for a,b in zip(df['llm_decisions_no_cot'],
 
 df = df.sample(frac=1)
 #df.to_excel(f"/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/balanced_{len(df)}_6k.xlsx")
-'''
+
 CoT = False
-folder_path = f"runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/"
+
 df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k.xlsx")
 
 contruct_regression_features(df, folder_path, CoT)
 
-#update_labels(folder_path, decisions=list(df["llm_decisions"]))
 
 
 
+'''
+CoT = True
+folder_path = f"runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/"
+df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_200_labelled.xlsx")
+#label_path = update_labels(folder_path, decisions=list(df["anum_decisions_cot"]))
+labels = list(df["anum_decisions_cot"])
 
-
+feature_path = "runs/processed_ds/deepmind-aqua_rat/test_set/CoT_False/regression_features.txt"
+label_path = "runs/processed_ds/deepmind-aqua_rat/test_set/CoT_False/regression_labels.txt"
+model_path = "runs/processed_ds/deepmind-aqua_rat/without_options/CoT_False/best_model.keras"
+outfile = f"CoT_{CoT}.xlsx"
+evaluate_model(model_path, feature_path, label_path, outfile=outfile, n = 200, decisions=list(df["anum_decisions_cot"]))

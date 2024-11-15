@@ -16,10 +16,8 @@ from models.feedforward import feedforward_network
 from datetime import datetime
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
-CoT = False
+CoT = True
 print ("Loading .env was: ", load_dotenv())
-
-print ("Test set: samples 91k - 95k Cot:", CoT)
 
 
 def get_exec_str(datestamp) -> str:
@@ -98,6 +96,10 @@ def run_inference(ds_name):
     df["llm_decisions"] = get_gpt4_score(df["Question"].tolist(), df["Reference"].tolist(), df["Prediction"].tolist())
     df.to_excel(fname,index=False)
     print(f"Inference Results with GPT-4o mini evaluation are saved to {fname}")
+
+    df = drop_nasty_samples(df)
+    df.to_excel(fname, index=False)
+    print(f"Inference Results (cleaned) with GPT-4o mini evaluation are saved to {fname}")
 
     return df, fname
 
@@ -197,6 +199,24 @@ def contruct_regression_features(df, date_time):
     print(f"Saved Regression Labels at {fname}")
 
     return feature, y
+def drop_nasty_samples(df):
+    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+    good_index = []
+    print ("Remove bad samples after inferences.")
+    for i, input in tqdm(enumerate(list(df['Prediction']))):
+
+        token = tokenizer(input, return_tensors="pt")
+        token = token['input_ids']
+        num_tokens = token.shape[1]
+        if num_tokens < 512:
+            good_index.append(i)
+    len_before = len(df)
+    df = df.iloc[good_index]
+    len_after = len(df)
+    print (f"Dropped {len_before-len_after} samples.")
+    return df
+
 
 def read_regression_features(feature_path, label_path):
     feature = np.loadtxt(feature_path, dtype=int)
@@ -264,6 +284,7 @@ if __name__ == '__main__':
 
         df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
 
+    df = drop_nasty_samples(df)
     if llm_config["samples"] != "all":
         if llm_config["samples"] < len(df):
             df = df.head(n=llm_config["samples"])
