@@ -6,6 +6,13 @@ from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from main import generate_prompt, generate_cot_prompt
 model_name = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
+
+def update_labels(folder_path, decisions):
+
+    fname = os.path.join(folder_path, "regression_labels.txt")
+    np.savetxt(fname, np.array(decisions), fmt='%d')
+    print(f"Saved Regression Labels at {fname}")
+
 def contruct_regression_features(df, folder_path, CoT):
     def get_last_token_idx(inputs_ids: list) -> list:
         last_token_idx = list()
@@ -72,9 +79,7 @@ def contruct_regression_features(df, folder_path, CoT):
     print(f"Saved Regression Labels at {fname}")
 
     return feature, y
-
-def update_labels(y):
-    pass
+'''
 
 test_no_cot_path= "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_False/deepmind-aqua_rat_6k.xlsx"
 test_cot_path = "/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/deepmind-aqua_rat_6k.xlsx"
@@ -127,10 +132,13 @@ agreements = [True if a==b else False for a,b in zip(df['llm_decisions_no_cot'],
 
 df = df.sample(frac=1)
 #df.to_excel(f"/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/balanced_{len(df)}_6k.xlsx")
+'''
 CoT = True
-folder_path = f"/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/"
-
+folder_path = f"runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/"
+df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_.xlsx")
 contruct_regression_features(df, folder_path, CoT)
+
+#update_labels(folder_path, decisions=list(df["llm_decisions"]))
 
 
 
