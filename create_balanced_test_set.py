@@ -135,7 +135,7 @@ df = df.sample(frac=1)
 '''
 CoT = True
 folder_path = f"runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/"
-df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_.xlsx")
+df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k.xlsx")
 contruct_regression_features(df, folder_path, CoT)
 
 #update_labels(folder_path, decisions=list(df["llm_decisions"]))
