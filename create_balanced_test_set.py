@@ -68,7 +68,7 @@ def contruct_regression_features(df, folder_path, CoT):
     # X = feature.mean(dim=1)
     # print (X.size())
     feature = feature.float().numpy()
-    y = pd.to_numeric(df['llm_decisions'])
+    y = pd.to_numeric(df['llm_decisions_no_cot'])
 
     fname = os.path.join(folder_path, "regression_features.txt")
     np.savetxt(fname, feature, fmt='%d')
@@ -133,9 +133,10 @@ agreements = [True if a==b else False for a,b in zip(df['llm_decisions_no_cot'],
 df = df.sample(frac=1)
 #df.to_excel(f"/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/balanced_{len(df)}_6k.xlsx")
 '''
-CoT = True
+CoT = False
 folder_path = f"runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/"
 df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k.xlsx")
+
 contruct_regression_features(df, folder_path, CoT)
 
 #update_labels(folder_path, decisions=list(df["llm_decisions"]))
