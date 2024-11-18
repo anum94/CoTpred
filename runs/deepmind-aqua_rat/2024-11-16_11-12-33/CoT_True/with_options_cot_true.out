@@ -1,0 +1,25 @@
+Running Inference using Together AI
+  2 100%|██████████| 40000/40000 [26:24:33<00:00,  2.38s/it]   
+  3 Inference Results without evaluation are saved to /home/aafzal/ToTpred/runs/deepmind-aqua_rat/2024-11-16_11-12-33/CoT_True/deepmind-aqua_rat.xlsx
+  4 Running Evaluation using GPT-4o mini.
+  5 100%|██████████| 40000/40000 [6:34:24<00:00,  1.69it/s]     
+  6 Inference Results with GPT-4o mini evaluation are saved to /home/aafzal/ToTpred/runs/deepmind-aqua_rat/2024-11-16_11-12-33/CoT_True/deepmind-aqua_rat.xlsx
+  7 Remove bad samples after inferences.
+  8 40000it [00:38, 1031.69it/s]
+  9 Dropped 9932 samples.
+ 10 Inference Results (cleaned) with GPT-4o mini evaluation are saved to /home/aafzal/ToTpred/runs/deepmind-aqua_rat/2024-11-16_11-12-33/CoT_True/deepmind-aqua_rat.xlsx
+ 11  True Labels: 23823, False Labels: 6245
+ 12 LLM can generate correct answer for 79.2304110682453% of the samples
+ 13 Using only 12490 samples to fix class imbalance in the dataset.
+ 14 Saved balaced dataset to /home/aafzal/ToTpred/runs/deepmind-aqua_rat/2024-11-16_11-12-33/CoT_True/deepmind-aqua_rat_balanced_12490.xlsx
+ 15 Remove bad samples after inferences.
+ 16 12490it [00:11, 1095.17it/s]
+ 17 Dropped 0 samples.
+ 18 Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.47s/it]
+ 19 Some parameters are on the meta device because they were offloaded to the cpu.
+ 20 Generating Features of regression model
+ 21 100%|██████████| 12490/12490 [5:49:50<00:00,  1.68s/it]  
+ 22 torch.Size([12490, 4096])
+ 23 Saved Regression Features at /home/aafzal/ToTpred/runs/deepmind-aqua_rat/2024-11-16_11-12-33/CoT_True/regression_features.txt
+ 24 Saved Regression Labels at /home/aafzal/ToTpred/runs/deepmind-aqua_rat/2024-11-16_11-12-33/CoT_True/regression_labels.txt
+ 25 # training samples: 11865, # Test samples: 625
