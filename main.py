@@ -2,7 +2,7 @@ from os import mkdir
 from pyexpat import features
 
 from sentence_transformers import SentenceTransformer
-from transformers import AutoTokenizer, AutoModelForCausalLM #, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, BertModel #, BitsAndBytesConfig
 from datasets import load_dataset, concatenate_datasets
 import torch
 from utils.wandb import wandb_init_run, wandb_push_json, wandb_push_table
@@ -277,9 +277,18 @@ def get_baseline_features(df):
     #df = df.head(20)
     model_name = llm_config["baseline_model"]
     print (f"Generating Embedding using Together AI using {model_name}")
+
     if llm_config["togetherai"] == False:
-        model = SentenceTransformer(model_name)
-    for question in tqdm(df['Question']):
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = BertModel.from_pretrained(model_name)
+
+
+    input_sentence = list(df['Question'])
+    if CoT:
+        input_prompts = generate_cot_prompt(input_sentence)
+    else:
+        input_prompts = generate_prompt(input_sentence)
+    for question in tqdm(input_prompts):
         if llm_config["togetherai"]:
             client = Together(
                 api_key=os.environ.get("TOGETHER_API_KEY"))
@@ -290,20 +299,26 @@ def get_baseline_features(df):
             embedding = response.data[0].embedding
         else:
             # Encode query and documents
-            embedding = model.encode(question)
+            inputs = tokenizer(question, return_tensors='pt', max_length=512, truncation=True, padding='max_length')
+            with torch.no_grad():
+                outputs = model(**inputs, output_hidden_states=True)
+            last_hidden_states = outputs.hidden_states[-1]
+            embedding = last_hidden_states[:,0,:]
+            embedding = embedding.squeeze()
+
         features.append(embedding)
 
     os.makedirs(os.path.join(get_exec_str(date_time),model_name))
     fname = os.path.join(get_exec_str(date_time),model_name, "regression_features.txt")
     features = np.array(features)
-    np.savetxt(fname, features, fmt='%d')
+    np.savetxt(fname, features, fmt='%.8f')
     print(f"Saved Regression Features at {fname}")
 
     fname = os.path.join(get_exec_str(date_time),model_name, "regression_labels.txt")
     y = np.array(df['llm_decisions'])
     np.savetxt(fname, y, fmt='%d')
     print(f"Saved Regression Labels at {fname}")
-    return features, y
+    return [features], y
 if __name__ == '__main__':
 
     date_time = '{date:%Y-%m-%d_%H-%M-%S}'.format(date=datetime.now())
@@ -330,6 +345,7 @@ if __name__ == '__main__':
         df, fname = run_inference(llm_config["dataset"])
         new_file_name = fname
 
+    df = drop_nasty_samples(df)
     if llm_config["fix_class_imbalance"]:
         n_true_label, n_false_label = check_class_imbalance(df)
         if CoT:
@@ -339,7 +355,7 @@ if __name__ == '__main__':
 
         df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
 
-    df = drop_nasty_samples(df)
+
     if llm_config["samples"] != "all":
         if llm_config["samples"] < len(df):
             df = df.head(n=llm_config["samples"])
@@ -347,7 +363,8 @@ if __name__ == '__main__':
     
     if llm_config["baseline"]:
         # get baseline features
-        feature, y = get_baseline_features(df)
+        features, y = get_baseline_features(df)
+        features = [features]
         wandb_table = { "#sample": len(df),
                        "hidden_layer": "N/A", "reg-model": llm_config["regression_model"],
                        "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],
@@ -384,6 +401,7 @@ if __name__ == '__main__':
                            "weights_init": "HE", "CoT": CoT}
 
     # Train the regression model.
+    features = [features]
     for i, feature in enumerate(features):
         if llm_config["regression_model"] == "linear regression":
             accuracy, loss = logistic_regression(feature, y, llm_config )

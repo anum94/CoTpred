@@ -14,7 +14,7 @@ def feedforward_network(X, y, exec_str, epochs = 5, i = -1, weights_init = "HE")
     best_model_path = os.path.join(exec_str,"models", f'best_model_hs_{str(i)}.keras')
 
     # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.005, random_state=42)
 
     # Standardize the features
     print (f"# training samples: {len(X_train)}, # Test samples: {len(y_test)}")

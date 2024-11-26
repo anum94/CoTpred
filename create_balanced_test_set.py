@@ -7,7 +7,7 @@ from together import Together
 import torch
 import tensorflow as tf
 from tqdm import tqdm
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BertModel
 from main import generate_prompt, generate_cot_prompt
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
 model_name = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
@@ -18,8 +18,7 @@ def update_labels(folder_path, decisions):
     np.savetxt(fname, decisions, fmt='%d')
     print(f"Saved Regression Labels at {fname}")
     return fname
-
-def contruct_regression_features(df, folder_path, CoT):
+def contruct_regression_features(df, folder_path, CoT, compute_all = False):
     def get_last_token_idx(inputs_ids: list) -> list:
         last_token_idx = list()
         for input_id in inputs_ids:
@@ -45,7 +44,7 @@ def contruct_regression_features(df, folder_path, CoT):
     tokenizer.pad_token_id = tokenizer.eos_token_id
     inputs = tokenizer(input_prompts, padding=True, truncation=True, return_tensors="pt")
     last_token_indices = get_last_token_idx(inputs['input_ids'].tolist())
-    batch_size = 4
+    batch_size = 1
 
     # Run forward pass with a batch size of 2
     # Ensure inputs are divided as per batch size
@@ -54,41 +53,65 @@ def contruct_regression_features(df, folder_path, CoT):
     attention_mask_batches = inputs['attention_mask'].split(batch_size)
 
     # Process each batch
-    feature = None
+    features = None
     for input_ids, attention_mask, last_token_idx in tqdm(
             zip(input_ids_batches, attention_mask_batches, last_token_indices), total=len(input_ids_batches)):
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
         hidden_states = outputs.hidden_states
-        last_layer_hidden_state = hidden_states[-1]
-        last_layer_hidden_state = last_layer_hidden_state[:, last_token_idx, :]
-        if feature is None:
-            feature = last_layer_hidden_state
-            # print (feature.size())
+
+        if compute_all:  # save for all hidden layers
+            hidden_states = torch.stack(list(hidden_states), dim=0)
+            last_token_reps = []
+            for hidden_state in hidden_states:
+                last_token_rep = hidden_state[:, last_token_idx, :]
+                last_token_reps.append(last_token_rep)
+
+            if features is None:
+                last_token_reps = torch.stack(last_token_reps, dim=0).unsqueeze(0)
+            else:
+                last_token_reps = torch.stack(last_token_reps, dim=0).unsqueeze(0)
+
+        else:  # just compute for one layer
+            last_layer_hidden_state = hidden_states[-1]
+            last_token_reps = last_layer_hidden_state[:, last_token_idx, :]
+
+        if features is None:
+            features = last_token_reps
         else:
-            # print (feature.size(), last_layer_hidden_state.size())
-            feature = torch.concat((feature, last_layer_hidden_state), dim=0)
+            features = torch.concat((features, last_token_reps), dim=0)
 
-    print(feature.size())
-    # X = feature.mean(dim=1)
-    # print (X.size())
-    feature = feature.float().numpy()
-    y = pd.to_numeric(df['llm_decisions_no_cot'])
+    if compute_all:
+        features_temp = []
+        features = features.squeeze()
+        a, b, c = features.size()
+        for i in range(b):
+            feature = features[:, i, :]
+            feature = feature.float().numpy()
+            fname = os.path.join(folder_path, "training_features", f"regression_features_layer_{i}.txt")
+            np.savetxt(fname, feature, fmt='%.8f')
+            print(f"Saved Regression Features at {fname}")
+            features_temp.append(feature)
 
+        features = features_temp
 
+    else:
+        fname = os.path.join(folder_path, "training_features", "regression_features.txt")
+        features = features.float().numpy()
+        np.savetxt(fname, features, fmt='%.8f')
+        print(f"Saved Regression Features at {fname}")
 
-    fname = os.path.join(folder_path, "regression_labels.txt")
+    y = pd.to_numeric(df['llm_decisions'])
+    fname_label = os.path.join(folder_path, "training_features", "regression_labels.txt")
     np.savetxt(fname, np.array(y), fmt='%d')
-    print(f"Saved Regression Labels at {fname}")
+    print(f"Saved Regression Labels at {fname_label}")
 
-    fname = os.path.join(folder_path, "regression_features.txt")
-    np.savetxt(fname, feature, fmt='%d')
-    print(f"Saved Regression Features at {fname}")
-
-    return feature, y
+    return fname, fname_label, features, y
 def construct_bert_features(df, folder_path, CoT):
-    model = SentenceTransformer("sentence-transformers/msmarco-bert-base-dot-v5")
+    model_name = "sentence-transformers/msmarco-bert-base-dot-v5"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = BertModel.from_pretrained(model_name)
     input_sentence = list(df['Question'])
     if CoT:
         input_prompts = generate_cot_prompt(input_sentence)
@@ -97,15 +120,26 @@ def construct_bert_features(df, folder_path, CoT):
 
     features = []
     for question in tqdm(input_prompts):
-        embedding = model.encode(question)
+        inputs = tokenizer(question, return_tensors='pt', max_length=512, truncation=True, padding='max_length')
+        with torch.no_grad():
+            outputs = model(**inputs, output_hidden_states=True)
+        last_hidden_states = outputs.hidden_states[-1]
+        embedding = last_hidden_states[:, 0, :]
+        embedding = embedding.squeeze()
         features.append(embedding)
 
-    fname = os.path.join(folder_path, "regression_labels.txt")
-    np.savetxt(fname, np.array(features), fmt='%d')
+    fname = os.path.join(folder_path, "regression_features.txt")
+    np.savetxt(fname, np.array(features), fmt='%.8f')
     print(f"Saved Regression Labels at {fname}")
-    return fname
+
+    y = pd.to_numeric(df['anum_decisions'])
+    fname_label = os.path.join(folder_path, "regression_labels.txt")
+    np.savetxt(fname_label, np.array(y), fmt='%d')
+    print(f"Saved Regression Labels at {fname_label}")
+
+    return fname, fname_label, features, y
+
 def construct_bge_features(df, folder_path, CoT):
-    model = SentenceTransformer("sentence-transformers/msmarco-bert-base-dot-v5")
     input_sentence = list(df['Question'])
     if CoT:
         input_prompts = generate_cot_prompt(input_sentence)
@@ -121,12 +155,19 @@ def construct_bge_features(df, folder_path, CoT):
             input=question
         )
         embedding = response.data[0].embedding
+        embedding = torch.Tensor(embedding)
         features.append(embedding)
 
-    fname = os.path.join(folder_path, "regression_labels.txt")
-    np.savetxt(fname, np.array(features), fmt='%d')
+    fname = os.path.join(folder_path, "regression_features.txt")
+    np.savetxt(fname, np.array(features), fmt='%.8f')
     print(f"Saved Regression Labels at {fname}")
-    return fname
+
+    y = pd.to_numeric(df['anum_decisions'])
+    fname_label = os.path.join(folder_path, "regression_labels.txt")
+    np.savetxt(fname_label, np.array(y), fmt='%d')
+    print(f"Saved Regression Labels at {fname_label}")
+
+    return fname, fname_label, features, y
 
 def compute_metrics(predictions, true_labels, pred_prob):
 
@@ -149,14 +190,20 @@ def compute_metrics(predictions, true_labels, pred_prob):
     # Calculate AUC
     auc = roc_auc_score(true_labels, pred_prob)
     print(f'Area Under Curve (AUC): {auc}')
-def evaluate_model(model_path, feature_path, label_path, n = None, outfile = None, decisions = None):
+def evaluate_model(model_path, features, labels, feature_path = None, label_path = None, n = None, outfile = None,):
 
-    X_test = np.loadtxt(feature_path, dtype=int)
-    if decisions is None:
+    if feature_path is not None:
+        X_test = np.loadtxt(feature_path, dtype=float)
+    else:
+        if isinstance(features, list):
+            X_test = torch.stack(features, dim=0)
+        else:
+            X_test = features
+    if label_path is not None:
         y_test = np.loadtxt(label_path, dtype=int)
     else:
+        y_test = np.array(labels, dtype=int)
 
-        y_test = np.array(decisions, dtype=int)
     if n is not None:
         X_test = X_test[:n]
         y_test = y_test[:n]
@@ -258,20 +305,48 @@ def derive_balanced_set_cot():
 CoT = True
 with_options = True
 
-folder_path = f"runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/without_options/"
-df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/without_options/balanced_1044_6k_650_labelled.xlsx")
-#with options
+folder_path = f"/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_{CoT}/with_options/"
+df_marko = pd.read_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/deepmind-aqua_rat_balanced_1k_230_this_marko.xlsx")
+df_ishwor = pd.read_excel("/Users/anumafzal/PycharmProjects/ToTpred/runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/deepmind-aqua_rat_balanced_770_ishwor.xlsx")
+df_test = pd.concat([df_marko,df_ishwor])
+label_column = "anum_decisions"
 #df = pd.read_excel("runs/deepmind-aqua_rat/2024-11-19_21-45-09/CoT_True/deepmind-aqua_rat.xlsx")
-label_path = update_labels(folder_path, decisions=list(df["anum_decisions_cot"]))
+#label_path = update_labels(folder_path, decisions=list(df_test[label_column]))
 
-feature_path = construct_bert_features(df,
-                                       "runs/deepmind-aqua_rat/2024-11-18_12-32-13/CoT_True/",
-                                       CoT)
+# Compute coorelation between human / llm evaluation over 1000 samples
+agreements = [True if int(a)==int(b) else False for a,b in zip(df_test['anum_decisions'], df_test['llm_decisions'])]
+print (f"Agreement: {agreements.count(True)}, Disagreement: {agreements.count(False)}")
+
+
+# Baseline BERT
+#feature_path, label_path, features, y = construct_bert_features(df_test,
+#                                       folder_path,
+#                                       CoT)
+#feature_path = f"runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/regression_features.txt"
+#label_path = "runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/regression_labels.txt"
+#model_path_sbert = "runs/deepmind-aqua_rat/2024-11-26_19-04-13/CoT_True/models/best_model_hs_0.keras"
+#outfile = f"CoT_{CoT}_bert.xlsx"
+#evaluate_model(model_path=model_path_sbert, features=features, labels = y, outfile=outfile)
+
+
+#Baseline BGE
+#df_test = df_test.head(2)
+#feature_path, label_path, features, y = construct_bge_features(df_test,
+#                                       folder_path,
+#                                       CoT)
 #feature_path = f"runs/deepmind-aqua_rat/2024-11-19_21-45-09/CoT_True/regression_features.txt"
 #label_path = "runs/deepmind-aqua_rat/2024-11-19_21-45-09/CoT_True/regression_labels.txt"
-#model_path_llama = f"runs/processed_ds/deepmind-aqua_rat/without_options/CoT_{CoT}/best_model.keras"
-#model_llama_path = ""
-model_path_sbert = "runs/deepmind-aqua_rat/2024-11-18_12-32-13/CoT_True/best_model.keras"
-model_path_bge = "runs/deepmind-aqua_rat/2024-11-18_11-42-39/CoT_True/best_model.keras"
-outfile = f"CoT_{CoT}.xlsx"
-evaluate_model(model_path_sbert, feature_path, label_path, outfile=outfile , n = 650)
+#model_path_bge = "/Users/anumafzal/PycharmProjects/ToTpred/runs/deepmind-aqua_rat/2024-11-26_23-01-51/CoT_True/models/best_model_hs_0.keras"
+#outfile = f"CoT_{CoT}_bge.xlsx"
+#evaluate_model(model_path=model_path_bge, features=features, labels = y, outfile=outfile)
+
+#Baseline Llama
+model_dir_llama = "runs/deepmind-aqua_rat/2024-11-26_16-34-17/CoT_True/models"
+
+feature_path, label_path, features, label, = contruct_regression_features(df=df_test,folder_path=folder_path, CoT=CoT, compute_all= True)
+for i, feature in enumerate(features):
+    model_path_llama_hs = os.path.join(model_dir_llama, f'best_model_hs_{str(i)}.keras')
+    outfile = f"CoT_{CoT}_llama_{i}.xlsx"
+    evaluate_model(model_path=model_path_llama_hs,
+                   features = feature, labels = label, outfile=outfile)
+    print (outfile)
