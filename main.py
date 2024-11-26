@@ -1,5 +1,5 @@
 from os import mkdir
-
+from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForCausalLM #, BitsAndBytesConfig
 from datasets import load_dataset, concatenate_datasets
 import torch
@@ -65,7 +65,11 @@ def run_inference(ds_name):
 
     if llm_config["samples"] != "all":
         dataset = dataset.select([i for i in range(llm_config["samples"])])
-    #dataset = dataset.select([i for i in range(91000, 95000)])
+    #df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_200_labelled.xlsx")
+    #index = df['Unnamed: 0'].tolist()
+    #index = [i + 91000 for i in index]
+    #dataset = dataset.select(index)
+    #dataset = dataset.select([i for i in range(93500, 94500)])
 
 
     if llm_config["togetherai"]:
@@ -157,7 +161,8 @@ def get_last_token_idx(inputs_ids: list) -> list:
 
     return last_token_idx
 
-def contruct_regression_features(df, date_time):
+def contruct_regression_features(df, date_time, compute_all = False):
+
     input_sentence = list(df['Question'])
     if CoT:
         input_prompts = generate_cot_prompt(input_sentence)
@@ -175,38 +180,62 @@ def contruct_regression_features(df, date_time):
 
 
     # Process each batch
-    feature = None
+    features = None
     for input_ids, attention_mask, last_token_idx in tqdm(zip(input_ids_batches, attention_mask_batches, last_token_indices), total = len(input_ids_batches)):
         with torch.no_grad():
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         
         hidden_states = outputs.hidden_states
-        last_layer_hidden_state = hidden_states[-1]
-        last_layer_hidden_state = last_layer_hidden_state[:,last_token_idx,:]
-        if feature is None:
-            feature = last_layer_hidden_state
-            #print (feature.size())
+
+        if compute_all: # save for all hidden layers
+            hidden_states = torch.stack(list(hidden_states), dim=0)
+            last_token_reps = []
+            for hidden_state in hidden_states:
+                last_token_rep = hidden_state[:,last_token_idx,:]
+                last_token_reps.append(last_token_rep)
+
+            if features is None:
+                last_token_reps = torch.stack(last_token_reps, dim=0).unsqueeze(0)
+            else:
+                last_token_reps = torch.stack(last_token_reps, dim=0).unsqueeze(0)
+
+        else: #just compute for one layer
+            last_layer_hidden_state = hidden_states[llm_config['hidden_layer']]
+            last_token_reps = last_layer_hidden_state[:,last_token_idx,:]
+
+
+        if features is None:
+            features = last_token_reps
+                #print (feature.size())
         else:
             #print (feature.size(), last_layer_hidden_state.size())
-            feature = torch.concat((feature,last_layer_hidden_state),dim=0)
+            features = torch.concat((features,last_token_reps),dim=0)
 
 
 
-    print (feature.size())
-    #X = feature.mean(dim=1)
-    #print (X.size())
-    feature = feature.float().numpy()
+
+    if compute_all:
+        features = features.squeeze()
+        a,b,c = features.size()
+        for i in range(b):
+            feature = features[:,i,:]
+            feature = feature.float().numpy()
+            fname = os.path.join(get_exec_str(date_time), f"regression_features_layer_{i}.txt")
+            np.savetxt(fname, feature, fmt='%d')
+            print(f"Saved Regression Features at {fname}")
+
+    else:
+        fname = os.path.join(get_exec_str(date_time), "regression_features.txt")
+        features = features.float().numpy()
+        np.savetxt(fname, features, fmt='%d')
+        print(f"Saved Regression Features at {fname}")
+
     y = pd.to_numeric(df['llm_decisions'])
-
-    fname = os.path.join(get_exec_str(date_time), "regression_features.txt")
-    np.savetxt(fname, feature, fmt='%d')
-    print(f"Saved Regression Features at {fname}")
-
     fname = os.path.join(get_exec_str(date_time), "regression_labels.txt")
     np.savetxt(fname, np.array(y), fmt='%d')
     print(f"Saved Regression Labels at {fname}")
 
-    return feature, y
+    return features, y
 def drop_nasty_samples(df):
     tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3.1-8B-Instruct")
     tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -226,33 +255,43 @@ def drop_nasty_samples(df):
     return df
 
 
-def read_regression_features(feature_path, label_path):
+def read_regression_features(feature_path, label_path, layer = None):
+
     feature = np.loadtxt(feature_path, dtype=int)
+    if layer is not None:
+        feature = feature[layer]
+
     y = np.loadtxt(label_path, dtype=int)
     return feature, y
 
 def get_baseline_features(df):
     features = []
     #df = df.head(20)
-    model = llm_config["baseline_model"]
-    print (f"Generating Embedding using Together AI using {model}")
+    model_name = llm_config["baseline_model"]
+    print (f"Generating Embedding using Together AI using {model_name}")
+    if llm_config["togetherai"] == False:
+        model = SentenceTransformer(model_name)
     for question in tqdm(df['Question']):
-        client = Together(
-            api_key=os.environ.get("TOGETHER_API_KEY"))
-        response = client.embeddings.create(
-            model=model,
-            input=question
-        )
-        embedding = response.data[0].embedding
+        if llm_config["togetherai"]:
+            client = Together(
+                api_key=os.environ.get("TOGETHER_API_KEY"))
+            response = client.embeddings.create(
+                model=model_name,
+                input=question
+            )
+            embedding = response.data[0].embedding
+        else:
+            # Encode query and documents
+            embedding = model.encode(question)
         features.append(embedding)
 
-    os.makedirs(os.path.join(get_exec_str(date_time),model))
-    fname = os.path.join(get_exec_str(date_time),model, "regression_features.txt")
+    os.makedirs(os.path.join(get_exec_str(date_time),model_name))
+    fname = os.path.join(get_exec_str(date_time),model_name, "regression_features.txt")
     features = np.array(features)
     np.savetxt(fname, features, fmt='%d')
     print(f"Saved Regression Features at {fname}")
 
-    fname = os.path.join(get_exec_str(date_time),model, "regression_labels.txt")
+    fname = os.path.join(get_exec_str(date_time),model_name, "regression_labels.txt")
     y = np.array(df['llm_decisions'])
     np.savetxt(fname, y, fmt='%d')
     print(f"Saved Regression Labels at {fname}")
@@ -319,7 +358,7 @@ if __name__ == '__main__':
 
             tokenizer = AutoTokenizer.from_pretrained(model_name)
             tokenizer.pad_token_id = tokenizer.eos_token_id
-            feature , y = contruct_regression_features(df, date_time=date_time)
+            feature , y = contruct_regression_features(df, date_time=date_time, compute_all=True)
         wandb_table = {"#sample": len(y),
                            "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
                            "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],

@@ -7,19 +7,19 @@ def generate_cot_prompt(questions):
     # Define a basic chain-of-thought prompt format
 
     if isinstance(questions, str):
-        cot_prompts = f"Question: {questions} \nLet's think step by step:\n"
+        cot_prompts = f"Question: {questions} \nLet's think step by step:"
     else:
-        cot_prompts = [f"Question: {question} \nLet's think step by step:\n" for question in questions]
+        cot_prompts = [f"Question: {question} \nLet's think step by step:" for question in questions]
     #print (f"CoT Prompt: {cot_prompts[0}\n")
     return cot_prompts
 
 def generate_prompt(questions):
     if isinstance(questions, str):
-        cot_prompts = (f"Generate answer of the question in the numberic form without showing intermediate calculation steps."
-                       f"\nQuestion: {questions}  \n Answer:\n")
+        cot_prompts = (f"Generate answer of the question without showing intermediate calculation steps."
+                       f"\nQuestion: {questions} ")
     else:
         cot_prompts = [(f"Generate answer of the given question without any chain of thought prompting. Do not give any reasoning or explanations as a part of the output."
-                    f"Question: {question} \n Please generate the answer in few words. \n Answer:\n") for question in questions]
+                    f"Question: {question} \n Please generate the answer in few words. ") for question in questions]
     #print (f"CoT Prompt: {cot_prompts[0}\n")
     return cot_prompts
 

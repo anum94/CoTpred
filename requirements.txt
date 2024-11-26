@@ -11,3 +11,5 @@ together
 randomname
 tensorflow
 openpyxl
+sentence-transformers
+tf-keras
