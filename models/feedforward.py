@@ -10,8 +10,8 @@ from tensorflow.keras.initializers import HeNormal, HeUniform
 from utils.wandb import wandb_plot_line
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
 import numpy as np
-def feedforward_network(X, y, exec_str, epochs = 5,weights_init = "HE"):
-    best_model_path = os.path.join(exec_str, 'best_model.keras')
+def feedforward_network(X, y, exec_str, epochs = 5, i = -1, weights_init = "HE"):
+    best_model_path = os.path.join(exec_str,"models", f'best_model_hs_{str(i)}.keras')
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, random_state=42)

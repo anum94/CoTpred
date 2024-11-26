@@ -1,4 +1,6 @@
 from os import mkdir
+from pyexpat import features
+
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForCausalLM #, BitsAndBytesConfig
 from datasets import load_dataset, concatenate_datasets
@@ -14,6 +16,8 @@ from dotenv import load_dotenv
 from models.regression import logistic_regression
 from models.feedforward import feedforward_network
 from datetime import datetime
+from os import listdir
+from os.path import isfile, join
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
 CoT = True
@@ -28,6 +32,7 @@ def get_exec_str(datestamp) -> str:
     exec_dir = os.path.join(config.working_dir, "runs", f"{ds}/{datestamp}", f"CoT_{CoT}")
     if not os.path.exists(exec_dir):
         os.makedirs(exec_dir)
+        os.makedirs(os.path.join(exec_dir, "models"))
 
     return exec_dir
 
@@ -211,23 +216,24 @@ def contruct_regression_features(df, date_time, compute_all = False):
             #print (feature.size(), last_layer_hidden_state.size())
             features = torch.concat((features,last_token_reps),dim=0)
 
-
-
-
     if compute_all:
+        features_temp = []
         features = features.squeeze()
         a,b,c = features.size()
         for i in range(b):
             feature = features[:,i,:]
             feature = feature.float().numpy()
             fname = os.path.join(get_exec_str(date_time), f"regression_features_layer_{i}.txt")
-            np.savetxt(fname, feature, fmt='%d')
+            np.savetxt(fname, feature, fmt='%.8f')
             print(f"Saved Regression Features at {fname}")
+            features_temp.append(feature)
+
+        features = features_temp
 
     else:
         fname = os.path.join(get_exec_str(date_time), "regression_features.txt")
         features = features.float().numpy()
-        np.savetxt(fname, features, fmt='%d')
+        np.savetxt(fname, features, fmt='%.8f')
         print(f"Saved Regression Features at {fname}")
 
     y = pd.to_numeric(df['llm_decisions'])
@@ -254,12 +260,14 @@ def drop_nasty_samples(df):
     print (f"Dropped {len_before-len_after} samples.")
     return df
 
+def get_all_feature_paths(path):
 
-def read_regression_features(feature_path, label_path, layer = None):
+    files = [f for f in listdir(path) if isfile(join(path, f))]
+    files = [os.path.join(path,f) for f in files if "regression_features_layer_" in f]
+    return files
+def read_regression_features(feature_path, label_path):
 
-    feature = np.loadtxt(feature_path, dtype=int)
-    if layer is not None:
-        feature = feature[layer]
+    feature = np.loadtxt(feature_path, dtype=float)
 
     y = np.loadtxt(label_path, dtype=int)
     return feature, y
@@ -348,7 +356,16 @@ if __name__ == '__main__':
     else:
 
         if llm_config["regression_features_saved"]: # read previously generated features
-            feature, y = read_regression_features(llm_config["regression_features_path"], llm_config["regression_labels_path"])
+            if llm_config["all_hidden_layers"]:
+                regression_feature_paths = get_all_feature_paths(llm_config["regression_features_path"])
+                features = []
+                for hidden_layer_path in regression_feature_paths:
+                    feature, y = read_regression_features(hidden_layer_path,
+                                                          llm_config["regression_labels_path"])
+                    features.append(feature)
+
+            else:
+                features, y = read_regression_features(llm_config["regression_features_path"], llm_config["regression_labels_path"])
         else:
             model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                      torch_dtype=torch.bfloat16, output_hidden_states=True,
@@ -358,22 +375,26 @@ if __name__ == '__main__':
 
             tokenizer = AutoTokenizer.from_pretrained(model_name)
             tokenizer.pad_token_id = tokenizer.eos_token_id
-            feature , y = contruct_regression_features(df, date_time=date_time, compute_all=True)
+            features , y = contruct_regression_features(df, date_time=date_time, compute_all=llm_config["all_hidden_layers"])
+            if llm_config["all_hidden_layers"] == False:
+                features = [features]
         wandb_table = {"#sample": len(y),
                            "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
                            "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],
                            "weights_init": "HE", "CoT": CoT}
 
     # Train the regression model.
-    if llm_config["regression_model"] == "linear regression":
-        accuracy, loss = logistic_regression(feature, y, llm_config )
+    for i, feature in enumerate(features):
+        if llm_config["regression_model"] == "linear regression":
+            accuracy, loss = logistic_regression(feature, y, llm_config )
 
-    else:
-        accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"])
+        else:
+            accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"], i = i)
 
 
 
-    wandb_table["test_accuracy"] = accuracy
-    wandb_push_json(wandb_table)
+        wandb_table["test_accuracy"] = accuracy
+        wandb_table["test_accuracy"] = i
+        wandb_push_json(wandb_table)
 
 

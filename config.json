@@ -1,7 +1,7 @@
 {
     "llm_config": {
         "dataset": "deepmind/aqua_rat",
-        "samples": 4,
+        "samples": 20,
         "max_new_tokens": 256,
         "togetherai": true,
         "batch_size": 1,
@@ -15,8 +15,9 @@
         "read_from_file": true,
         "filename": "runs/deepmind-aqua_rat/2024-11-15_14-12-03/CoT_True/deepmind-aqua_rat_gpt_4o_balanced_13524.xlsx",
         "regression_features_saved": false,
-        "regression_features_path": "runs/openai-gsm8k/2024-11-05_12-02-54/regression_features.txt",
-        "regression_labels_path": "runs/openai-gsm8k/2024-11-05_12-02-54/regression_labels.txt",
+        "all_hidden_layers": true,
+        "regression_features_path": "runs/deepmind-aqua_rat/2024-11-26_16-49-44/CoT_True/",
+        "regression_labels_path": "runs/deepmind-aqua_rat/2024-11-26_16-49-44/CoT_True/regression_labels.txt",
         "verbose": false,
         "class_imbalance": false,
         "fix_class_imbalance": false,
