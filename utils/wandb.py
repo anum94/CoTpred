@@ -16,7 +16,7 @@ def wandb_push_json(table_json:json, i = None):
     col_names = list(table_json.keys())
     table = wandb.Table(columns=col_names)
     values = list(table_json.values())
-    table.add_data(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7])
+    table.add_data(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8])
     if i is None:
         wandb.log({"metrics_table": table}, commit=True)
     else:

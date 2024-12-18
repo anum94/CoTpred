@@ -44,6 +44,15 @@ def get_ds(ds_name):
         #dataset_test = load_dataset("openai/gsm8k", "main", split='test')
         #dataset = concatenate_datasets([dataset_train, dataset_test])
         dataset = load_dataset("openai/gsm8k", "main", split='test')
+        return dataset
+    elif ds_name == "lighteval/MATH":
+        def fn_math(sample, _):
+            return {"question": sample["problem"], "answer": sample["solution"]}
+        dataset_train = load_dataset("lighteval/MATH", split="train", trust_remote_code=True)
+        dataset_test = load_dataset("lighteval/MATH", split="test", trust_remote_code=True)
+        dataset = concatenate_datasets([dataset_train, dataset_test])
+        return dataset.map(fn_math, dataset, batched=True, remove_columns=["type", "level", "problem", "solution"])
+
     elif ds_name == "deepmind/aqua_rat":
         dataset = load_dataset("deepmind/aqua_rat", "tokenized", split='train')
 
@@ -252,7 +261,7 @@ def drop_nasty_samples(df):
         token = tokenizer(input, return_tensors="pt")
         token = token['input_ids']
         num_tokens = token.shape[1]
-        if num_tokens < 512:
+        if num_tokens < 512 and df['llm_decisions'].iloc[i] == 0:
             good_index.append(i)
     len_before = len(df)
     df = df.iloc[good_index]
@@ -376,7 +385,7 @@ if __name__ == '__main__':
             if llm_config["all_hidden_layers"]:
                 regression_feature_paths = get_all_feature_paths(llm_config["regression_features_path"])
                 features = []
-                for hidden_layer_path in regression_feature_paths:
+                for hidden_layer_path in tqdm(regression_feature_paths):
                     feature, y = read_regression_features(hidden_layer_path,
                                                           llm_config["regression_labels_path"])
                     features.append(feature)
@@ -397,22 +406,58 @@ if __name__ == '__main__':
                 features = [features]
         wandb_table = {"#sample": len(y),
                            "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
-                           "balance_ds": llm_config["class_imbalance"], "epochs": llm_config["epochs"],
+                           "batch_size": llm_config["batch_size"], "epochs": llm_config["epochs"],
                            "weights_init": "HE", "CoT": CoT}
 
     # Train the regression model.
-    features = [features]
-    for i, feature in enumerate(features):
-        if llm_config["regression_model"] == "linear regression":
-            accuracy, loss = logistic_regression(feature, y, llm_config )
+    #features = [features]
+    scores = None
+    best_score = None
+    batch_size = [8,16,32,64]
+    weights_init = [None, 'HE_normal', 'HE_uniform']
+    learning_rate = [0.01, 0.001] #, 0.0001]
+    thresholds = [0.5]#, 0.6, 0.75]
+    human_labelled = [True,]# False]
+    optimizers = ['adam', 'sgd']
 
-        else:
-            accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"], i = i)
+    for human in tqdm(human_labelled):
+        for th in tqdm(thresholds):
+            for lr in tqdm(learning_rate):
+                for bs in tqdm(batch_size):
+                    for w_init in tqdm(weights_init):
+                        for optimizer in tqdm(optimizers):
+                            for i, feature in enumerate(features):
+                                wandb_table["hidden_layer"] = i
+                                wandb_table["batch_size"] = bs
+                                wandb_table["weights_init"] = w_init
+                                wandb_table["learning_rate"] = lr
+                                try:
+                                    if llm_config["regression_model"] == "linear regression":
+                                        accuracy, loss = logistic_regression(feature, y, llm_config )
 
+                                    else:
+                                        accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"],
+                                                                             i = i, batch_size=bs, weights_init=w_init, lr= lr,
+                                                                             external_test_set=human, confidence_th=th, optimizer=optimizer)
 
+                                except Exception as e:
+                                    print(e)
+                                    print (wandb_table)
+                                    accuracy = 0
+                                    loss = 0
 
-        wandb_table["test_accuracy"] = accuracy
-        wandb_table["test_accuracy"] = i
-        wandb_push_json(wandb_table)
+                                wandb_table["test_accuracy"] = accuracy
+                                if scores is None:
+                                    scores = pd.DataFrame.from_dict([wandb_table])
+                                    best_score = wandb_table
+                                else:
+                                    scores = pd.concat([scores,pd.DataFrame.from_records([wandb_table]) ], axis = 0)
+                                    if wandb_table["test_accuracy"] > best_score["test_accuracy"]:
+                                        best_score = wandb_table
+
+                                wandb_push_json(wandb_table, i=i)
+                print(best_score)
+    print (best_score)
+    scores.to_excel("hp_optimization_scores.xlsx")
 
 
