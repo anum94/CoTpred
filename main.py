@@ -1,6 +1,7 @@
 from os import mkdir
 from pyexpat import features
 
+from pyarrow.dataset import dataset
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForCausalLM, BertModel #, BitsAndBytesConfig
 from datasets import load_dataset, concatenate_datasets
@@ -17,7 +18,7 @@ from models.regression import logistic_regression
 from models.feedforward import feedforward_network
 from datetime import datetime
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, split
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
 CoT = True
@@ -45,6 +46,12 @@ def get_ds(ds_name):
         #dataset = concatenate_datasets([dataset_train, dataset_test])
         dataset = load_dataset("openai/gsm8k", "main", split='test')
         return dataset
+    elif ds_name == "aops_forum":
+        dataset = load_dataset("json", data_files="aops_forum.json", split="train")
+        dataset= dataset.rename_column("ground_truth", "answer")
+
+        return dataset
+
     elif ds_name == "lighteval/MATH":
         def fn_math(sample, _):
             return {"question": sample["problem"], "answer": sample["solution"]}
@@ -52,7 +59,11 @@ def get_ds(ds_name):
         dataset_test = load_dataset("lighteval/MATH", split="test", trust_remote_code=True)
         dataset = concatenate_datasets([dataset_train, dataset_test])
         return dataset.map(fn_math, dataset, batched=True, remove_columns=["type", "level", "problem", "solution"])
-
+    elif ds_name == "aslawliet/cn-k12":
+        def fn_cnk12(sample, _):
+            return {"question": sample["problem"], "answer": sample["solution"]}
+        dataset= load_dataset("aslawliet/cn-k12", split="train", trust_remote_code=True)
+        return dataset.map(fn_cnk12, dataset, batched=True, remove_columns=[ "problem", "solution"])
     elif ds_name == "deepmind/aqua_rat":
         dataset = load_dataset("deepmind/aqua_rat", "tokenized", split='train')
 
@@ -124,6 +135,8 @@ def run_inference(ds_name):
     print(f"Inference Results with GPT-4o mini evaluation are saved to {fname}")
 
     df = drop_nasty_samples(df)
+    fname = f"{ds_name.replace('/', '-')}_filtered.xlsx"
+    fname = os.path.join(get_exec_str(date_time), fname)
     df.to_excel(fname, index=False)
     print(f"Inference Results (cleaned) with GPT-4o mini evaluation are saved to {fname}")
 
@@ -261,7 +274,7 @@ def drop_nasty_samples(df):
         token = tokenizer(input, return_tensors="pt")
         token = token['input_ids']
         num_tokens = token.shape[1]
-        if num_tokens < 512 and df['llm_decisions'].iloc[i] == 0:
+        if num_tokens <= 512 :
             good_index.append(i)
     len_before = len(df)
     df = df.iloc[good_index]
@@ -354,7 +367,7 @@ if __name__ == '__main__':
         df, fname = run_inference(llm_config["dataset"])
         new_file_name = fname
 
-    df = drop_nasty_samples(df)
+    #df = drop_nasty_samples(df)
     if llm_config["fix_class_imbalance"]:
         n_true_label, n_false_label = check_class_imbalance(df)
         if CoT:
@@ -363,7 +376,6 @@ if __name__ == '__main__':
             samples_per_class = n_true_label
 
         df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
-
 
     if llm_config["samples"] != "all":
         if llm_config["samples"] < len(df):
@@ -426,7 +438,7 @@ if __name__ == '__main__':
                 for bs in tqdm(batch_size):
                     for w_init in tqdm(weights_init):
                         for optimizer in tqdm(optimizers):
-                            for i, feature in enumerate(features):
+                            for i, feature in enumerate(features[:1]):
                                 wandb_table["hidden_layer"] = i
                                 wandb_table["batch_size"] = bs
                                 wandb_table["weights_init"] = w_init
