@@ -87,6 +87,8 @@ def contruct_regression_features(df, folder_path, CoT, compute_all = False):
         features = features.squeeze()
         a, b, c = features.size()
         for i in range(b):
+            if i == 31:
+                print()
             feature = features[:, i, :]
             feature = feature.float().numpy()
             fname = os.path.join(folder_path, "training_features", f"regression_features_layer_{i}.txt")
@@ -104,7 +106,7 @@ def contruct_regression_features(df, folder_path, CoT, compute_all = False):
 
     y = pd.to_numeric(df['llm_decisions'])
     fname_label = os.path.join(folder_path, "training_features", "regression_labels.txt")
-    np.savetxt(fname, np.array(y), fmt='%d')
+    np.savetxt(fname_label, np.array(y), fmt='%d')
     print(f"Saved Regression Labels at {fname_label}")
 
     return fname, fname_label, features, y
@@ -343,7 +345,7 @@ print (f"Agreement: {agreements.count(True)}, Disagreement: {agreements.count(Fa
 #Baseline Llama
 model_dir_llama = "runs/deepmind-aqua_rat/2024-11-26_16-34-17/CoT_True/models"
 
-feature_path, label_path, features, label, = contruct_regression_features(df=df_test,folder_path=folder_path, CoT=CoT, compute_all= True)
+feature_path, label_path, features, label, = contruct_regression_features(df=df_test.head(3),folder_path=folder_path, CoT=CoT, compute_all= True)
 for i, feature in enumerate(features):
     model_path_llama_hs = os.path.join(model_dir_llama, f'best_model_hs_{str(i)}.keras')
     outfile = f"CoT_{CoT}_llama_{i}.xlsx"
