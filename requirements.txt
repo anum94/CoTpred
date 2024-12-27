@@ -13,3 +13,6 @@ tensorflow
 openpyxl
 sentence-transformers
 tf-keras
+pandas
+together
+torch
