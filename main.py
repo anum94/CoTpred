@@ -110,7 +110,7 @@ def run_inference(ds_name):
         answer = sample['answer']
 
         gen_answer = generate_answer(question, togetherai=llm_config["togetherai"], tokenizer=tokenizer,
-                                     CoT=CoT, model=None)
+                                     CoT=CoT, model=None, gen_tokens = llm_config["max_new_tokens"])
 
         if llm_config["verbose"]:
             # Display the question and model's chain-of-thought response
@@ -210,6 +210,7 @@ def contruct_regression_features(df, date_time, compute_all = False):
     features = None
     for input_ids, attention_mask, last_token_idx in tqdm(zip(input_ids_batches, attention_mask_batches, last_token_indices), total = len(input_ids_batches)):
         with torch.no_grad():
+            input_ids = input_ids.to('cuda')
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         
         hidden_states = outputs.hidden_states
@@ -274,7 +275,7 @@ def drop_nasty_samples(df):
         token = tokenizer(input, return_tensors="pt")
         token = token['input_ids']
         num_tokens = token.shape[1]
-        if num_tokens <= 512 :
+        if num_tokens <= llm_config["max_new_tokens"] :
             good_index.append(i)
     len_before = len(df)
     df = df.iloc[good_index]
@@ -381,7 +382,7 @@ if __name__ == '__main__':
         if llm_config["samples"] < len(df):
             df = df.head(n=llm_config["samples"])
 
-    
+    exit()
     if llm_config["baseline"]:
         # get baseline features
         features, y = get_baseline_features(df)
@@ -427,9 +428,9 @@ if __name__ == '__main__':
     best_score = None
     batch_size = [8,16,32,64]
     weights_init = [None, 'HE_normal', 'HE_uniform']
-    learning_rate = [0.01, 0.001] #, 0.0001]
-    thresholds = [0.5]#, 0.6, 0.75]
-    human_labelled = [True,]# False]
+    learning_rate = [0.01, 0.001, 0.0001]
+    thresholds = [0.5, 0.6, 0.75]
+    human_labelled = [True]#, False]
     optimizers = ['adam', 'sgd']
 
     for human in tqdm(human_labelled):
@@ -438,26 +439,19 @@ if __name__ == '__main__':
                 for bs in tqdm(batch_size):
                     for w_init in tqdm(weights_init):
                         for optimizer in tqdm(optimizers):
-                            for i, feature in enumerate(features[:1]):
+                            for i, feature in enumerate(features):
                                 wandb_table["hidden_layer"] = i
                                 wandb_table["batch_size"] = bs
                                 wandb_table["weights_init"] = w_init
                                 wandb_table["learning_rate"] = lr
-                                try:
-                                    if llm_config["regression_model"] == "linear regression":
-                                        accuracy, loss = logistic_regression(feature, y, llm_config )
 
-                                    else:
-                                        accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"],
+                                if llm_config["regression_model"] == "linear regression":
+                                    accuracy, loss = logistic_regression(feature, y, llm_config )
+
+                                else:
+                                    accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"],
                                                                              i = i, batch_size=bs, weights_init=w_init, lr= lr,
                                                                              external_test_set=human, confidence_th=th, optimizer=optimizer)
-
-                                except Exception as e:
-                                    print(e)
-                                    print (wandb_table)
-                                    accuracy = 0
-                                    loss = 0
-
                                 wandb_table["test_accuracy"] = accuracy
                                 if scores is None:
                                     scores = pd.DataFrame.from_dict([wandb_table])

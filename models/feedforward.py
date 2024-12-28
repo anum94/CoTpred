@@ -1,7 +1,6 @@
 import pandas as pd
 import tensorflow as tf
 import os
-from scikeras.wrappers import KerasClassifier
 from tensorflow.keras.models import Sequential
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, LeakyReLU
@@ -35,75 +34,81 @@ def feedforward_network(X, y, exec_str, epochs = 5, i = -1, weights_init = "HE",
     else:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
 
-    # Standardize the features
-    #print (f"# training samples: {len(X_train)}, # Test samples: {len(y_test)}")
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    try:
+        # Standardize the features
+        #print (f"# training samples: {len(X_train)}, # Test samples: {len(y_test)}")
+        scaler = StandardScaler()
+        X_train = scaler.fit_transform(X_train)
+        X_test = scaler.transform(X_test)
 
-    #model = KerasClassifier(build_fn=build_clf)
-    #best_hp = get_best_hp(model)
+        #model = KerasClassifier(build_fn=build_clf)
+        #best_hp = get_best_hp(model)
 
-    # Define the model
-    if weights_init == 'HE_normal':
-        model = Sequential([
-            Dense(256, input_shape=(X_train.shape[1],), activation='relu', kernel_initializer=HeNormal()),
-            Dense(128, activation='relu', kernel_initializer=HeNormal()),
-            Dense(64, activation='relu', kernel_initializer=HeNormal()),
-            Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
-        ])
+        # Define the model
+        if weights_init == 'HE_normal':
+            model = Sequential([
+                Dense(256, input_shape=(X_train.shape[1],), activation='relu', kernel_initializer=HeNormal()),
+                Dense(128, activation='relu', kernel_initializer=HeNormal()),
+                Dense(64, activation='relu', kernel_initializer=HeNormal()),
+                Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
+            ])
 
-    if weights_init == 'HE_uniform':
-        model = Sequential([
-            Dense(256, input_shape=(X_train.shape[1],), activation='relu', kernel_initializer=HeUniform()),
-            Dense(128, activation='relu', kernel_initializer=HeUniform()),
-            Dense(64, activation='relu', kernel_initializer=HeUniform()),
-            Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
-        ])
+        if weights_init == 'HE_uniform':
+            model = Sequential([
+                Dense(256, input_shape=(X_train.shape[1],), activation='relu', kernel_initializer=HeUniform()),
+                Dense(128, activation='relu', kernel_initializer=HeUniform()),
+                Dense(64, activation='relu', kernel_initializer=HeUniform()),
+                Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
+            ])
 
-    else:
-        model = Sequential([
-            Dense(256, input_shape=(X_train.shape[1],), activation='relu'),
-            Dense(128, activation='relu',),
-            Dense(64, activation='relu',),
-            Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
-        ])
+        else:
+            model = Sequential([
+                Dense(256, input_shape=(X_train.shape[1],), activation='relu'),
+                Dense(128, activation='relu',),
+                Dense(64, activation='relu',),
+                Dense(1, activation='sigmoid')  # Output layer with sigmoid activation for binary classification
+            ])
 
-    # Compile the model
-    if optimizer == "adam":
-        optimizer = keras.optimizers.Adam(learning_rate=lr)
-    else:
-        optimizer = keras.optimizers.SGD(learning_rate=lr)
-    model.compile(optimizer=optimizer,
-                  loss='binary_crossentropy',
-                  metrics=['accuracy'])
+        # Compile the model
+        if optimizer == "adam":
+            optimizer = keras.optimizers.Adam(learning_rate=lr)
+        else:
+            optimizer = keras.optimizers.SGD(learning_rate=lr)
+        model.compile(optimizer=optimizer,
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
 
-    #print (model.summary())
-
-
-
-    checkpoint = ModelCheckpoint(best_model_path, monitor='val_accuracy',
-                                 save_best_only=True, mode='max', verbose=0)
+        #print (model.summary())
 
 
-    # Train the model
-    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=0.2,
-              callbacks = [WandbMetricsLogger(log_freq=10), checkpoint], verbose=False,
-              )
-    plot_history(history)
+
+        checkpoint = ModelCheckpoint(best_model_path, monitor='val_accuracy',
+                                     save_best_only=True, mode='max', verbose=0)
 
 
-    best_model = tf.keras.models.load_model(best_model_path)
+        # Train the model
+        history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=0.2,
+                  callbacks = [WandbMetricsLogger(log_freq=10), checkpoint], verbose=False,
+                  )
+        plot_history(history)
 
-    # Evaluate the model
-    loss, accuracy = best_model.evaluate(X_test, y_test, verbose=False)
-    #print(f'Test accuracy: {accuracy:.4f}')
 
-    # Get predictions
-    log_prob = best_model.predict(X_test, verbose=1)
-    pred = (log_prob > confidence_th).astype("int32")
+        best_model = tf.keras.models.load_model(best_model_path)
 
-    compute_metrics(predictions=pred, true_labels=y_test, pred_prob = log_prob)
+        # Evaluate the model
+        loss, accuracy = best_model.evaluate(X_test, y_test, verbose=False)
+        #print(f'Test accuracy: {accuracy:.4f}')
+
+        # Get predictions
+        log_prob = best_model.predict(X_test, verbose=1)
+        pred = (log_prob > confidence_th).astype("int32")
+
+        compute_metrics(predictions=pred, true_labels=y_test, pred_prob = log_prob)
+    except Exception as e:
+        print(e)
+        accuracy = 0
+        loss = 0
+
     return accuracy , loss
 
 def compute_metrics(predictions, true_labels, pred_prob):

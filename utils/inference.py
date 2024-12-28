@@ -25,18 +25,18 @@ def generate_prompt(questions):
 
 
 # Function to get the model's prediction
-def generate_answer(question, tokenizer, CoT, togetherai = True, model = None):
+def generate_answer(question, tokenizer, CoT, togetherai = True, model = None, gen_tokens = 512):
     if togetherai == False and model is None:
         print("Model must be provided to run inference if Together AI is disabled. Model inference Failed. Returning empty string as output")
         return ""
     if CoT:
         cot_prompt = generate_cot_prompt(question)
-        max_new_tokens = 512
+        max_new_tokens = gen_tokens
     else:
         cot_prompt = generate_prompt(question)
         max_new_tokens = 50
     if togetherai:
-        client = Together(api_key=os.environ.get("TOGETHER_API_KEY"))
+        client = Together(api_key=os.environ.get("TOGETHER_API_KEY")) #'95d4cde2369d3c193c5ad57d5efbad3d3dbe77250d458bc304834bd43b65c037'
         response = client.chat.completions.create(
             model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
             messages=[{"role": "user", "content": cot_prompt}],
