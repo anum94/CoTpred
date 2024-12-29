@@ -15,6 +15,7 @@ from utils.wandb import wandb_plot_line
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
 import numpy as np
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 def feedforward_network(X, y, exec_str, epochs = 5, i = -1, weights_init = "HE", batch_size = 8,
                         lr = 0.01, external_test_set = False, confidence_th = 0.5, optimizer = "adam"):
 

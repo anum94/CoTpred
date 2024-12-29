@@ -21,6 +21,8 @@ from os import listdir
 from os.path import isfile, join, split
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
+import warnings
+warnings.filterwarnings('ignore')
 CoT = True
 with_options = True
 print ("Loading .env was: ", load_dotenv())
@@ -51,7 +53,12 @@ def get_ds(ds_name):
         dataset= dataset.rename_column("ground_truth", "answer")
 
         return dataset
-
+    elif ds_name =="olympiad":
+        def fn_numina(sample, _):
+            return {"question": sample["problem"], "answer": sample["solution"]}
+        dataset = load_dataset("AI-MO/NuminaMath-CoT",  split='train')
+        dataset = dataset.filter(lambda example: example['source'].startswith('olympiads'))
+        return dataset.map(fn_numina, dataset, batched=True, remove_columns=["messages", "source", "problem", "solution"])
     elif ds_name == "lighteval/MATH":
         def fn_math(sample, _):
             return {"question": sample["problem"], "answer": sample["solution"]}
@@ -102,7 +109,9 @@ def run_inference(ds_name):
     else:
         print ("Running Inference using GPU")
 
-
+    fname = f"{ds_name.replace('/', '-')}.xlsx"
+    fname = os.path.join(get_exec_str(date_time), fname)
+    print (f"Inference Results would be saved to {fname}")
     dummy = list()
     for i in tqdm(range(len(dataset))):
         sample = dataset[i]
@@ -119,12 +128,19 @@ def run_inference(ds_name):
             print(f"Reference Answer:\n{answer}")
 
         dummy.append([question, answer, gen_answer])
+
+        if (len(dummy) % 1000) == 0:
+            df = pd.DataFrame(dummy, columns=['Question', 'Reference', 'Prediction'])
+            df["anum_decisions"] = [False] * len(df)
+            df["llm_decisions"] = [False] * len(df)
+
+            df.to_excel(fname, index=False)
+
+
     df = pd.DataFrame(dummy, columns = ['Question', 'Reference', 'Prediction'])
     df["anum_decisions"] = [False] * len(df)
     df["llm_decisions"] = [False] * len(df)
 
-    fname = f"{ds_name.replace('/', '-')}.xlsx"
-    fname = os.path.join(get_exec_str(date_time), fname)
     df.to_excel(fname, index=False)
     print(f"Inference Results without evaluation are saved to {fname}")
 
@@ -275,7 +291,7 @@ def drop_nasty_samples(df):
         token = tokenizer(input, return_tensors="pt")
         token = token['input_ids']
         num_tokens = token.shape[1]
-        if num_tokens <= llm_config["max_new_tokens"] :
+        if num_tokens <= llm_config["max_new_tokens"]:
             good_index.append(i)
     len_before = len(df)
     df = df.iloc[good_index]
@@ -351,7 +367,6 @@ if __name__ == '__main__':
     print (llm_config)
     wandb_init_run(config=llm_config)
 
-
     if llm_config["read_from_file"]:
         df = read_from_file(fname = llm_config["filename"])
         new_file_name = llm_config["filename"]
@@ -371,11 +386,7 @@ if __name__ == '__main__':
     #df = drop_nasty_samples(df)
     if llm_config["fix_class_imbalance"]:
         n_true_label, n_false_label = check_class_imbalance(df)
-        if CoT:
-            samples_per_class = n_false_label
-        else:
-            samples_per_class = n_true_label
-
+        samples_per_class = min(n_false_label, n_true_label)
         df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
 
     if llm_config["samples"] != "all":
@@ -426,12 +437,12 @@ if __name__ == '__main__':
     #features = [features]
     scores = None
     best_score = None
-    batch_size = [8,16,32,64]
-    weights_init = [None, 'HE_normal', 'HE_uniform']
-    learning_rate = [0.01, 0.001, 0.0001]
+    batch_size = [32, 64] # [8,16,32,64]
+    weights_init = [ 'HE_normal', None, 'HE_uniform']
+    learning_rate = [0.001,]# 0.01, 0.0001]
     thresholds = [0.5, 0.6, 0.75]
-    human_labelled = [True]#, False]
-    optimizers = ['adam', 'sgd']
+    human_labelled = [True, False]
+    optimizers = ['sgd','adam', ]
 
     for human in tqdm(human_labelled):
         for th in tqdm(thresholds):
@@ -444,6 +455,9 @@ if __name__ == '__main__':
                                 wandb_table["batch_size"] = bs
                                 wandb_table["weights_init"] = w_init
                                 wandb_table["learning_rate"] = lr
+                                wandb_table["optimizer"] = optimizer
+                                wandb_table["human_labelled"] = human
+                                wandb_table["threshold"] = th
 
                                 if llm_config["regression_model"] == "linear regression":
                                     accuracy, loss = logistic_regression(feature, y, llm_config )
