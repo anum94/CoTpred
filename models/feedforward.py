@@ -20,20 +20,25 @@ def feedforward_network(X, y, exec_str, epochs = 5, i = -1, weights_init = "HE",
                         lr = 0.01, external_test_set = False, confidence_th = 0.5, optimizer = "adam"):
 
     best_model_path = os.path.join(exec_str,"models", f'best_model_hs_{str(i)}.keras')
+    feature_path = os.path.join("runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/test_features_1000",
+                                f"regression_features_layer_{i}.txt")
+    X_test = np.loadtxt(feature_path, dtype=float)
 
-    # Split the data into training and testing sets
+    X_train = np.array(X)
+    y_train = np.array(y)
+
+
     if external_test_set:
-        feature_path = os.path.join("runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/test_features_1000", f"regression_features_layer_{i}.txt")
-        X_test = np.loadtxt(feature_path, dtype=float)
-
-        y_test = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/deepmind-aqua_rat_balanced_1000_labelled.xlsx")["anum_decisions"]
-        y_test = np.array(y_test).reshape(-1, 1)
-
-        X_train = np.array(X)
-        y_train = np.array(y).reshape(-1, 1)
+        y_test = pd.read_excel(
+            "runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/deepmind-aqua_rat_balanced_1000_labelled.xlsx")[
+            "anum_decisions"]
 
     else:
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
+        y_test = pd.read_excel(
+            "runs/processed_ds/deepmind-aqua_rat/test_set/CoT_True/with_options/deepmind-aqua_rat_balanced_1000_labelled.xlsx")[
+            "llm_decisions"]
+
+    #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
 
     try:
         # Standardize the features

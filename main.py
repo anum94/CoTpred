@@ -96,12 +96,12 @@ def run_inference(ds_name):
     dataset = get_ds(ds_name)
 
     if llm_config["samples"] != "all":
-        dataset = dataset.select([i for i in range(llm_config["samples"])])
+        dataset = dataset.select([i+11000 for i in range(llm_config["samples"]-11000)])
     #df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_200_labelled.xlsx")
     #index = df['Unnamed: 0'].tolist()
-    #index = [i + 91000 for i in index]
+    #index = [i  for i in range(93000, len(df))]
     #dataset = dataset.select(index)
-    #dataset = dataset.select([i for i in range(93500, 94500)])
+    #dataset = dataset.select([i for i in range(93000, len(df))])
 
 
     if llm_config["togetherai"]:
@@ -119,7 +119,7 @@ def run_inference(ds_name):
         answer = sample['answer']
 
         gen_answer = generate_answer(question, togetherai=llm_config["togetherai"], tokenizer=tokenizer,
-                                     CoT=CoT, model=None, gen_tokens = llm_config["max_new_tokens"])
+                                     CoT=CoT, model=model, gen_tokens = llm_config["max_new_tokens"])
 
         if llm_config["verbose"]:
             # Display the question and model's chain-of-thought response
@@ -129,7 +129,7 @@ def run_inference(ds_name):
 
         dummy.append([question, answer, gen_answer])
 
-        if (len(dummy) % 1000) == 0:
+        if (len(dummy) % 500) == 0:
             df = pd.DataFrame(dummy, columns=['Question', 'Reference', 'Prediction'])
             df["anum_decisions"] = [False] * len(df)
             df["llm_decisions"] = [False] * len(df)
@@ -373,11 +373,13 @@ if __name__ == '__main__':
 
     else:
         # Generate answer
-        if not llm_config["togetherai"]:
+        if llm_config["togetherai"] == False:
             model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                      torch_dtype=torch.bfloat16,
                                                      #load_in_4bit=True
                                                           )
+        else:
+            model = None
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
         df, fname = run_inference(llm_config["dataset"])
@@ -393,7 +395,7 @@ if __name__ == '__main__':
         if llm_config["samples"] < len(df):
             df = df.head(n=llm_config["samples"])
 
-    exit()
+
     if llm_config["baseline"]:
         # get baseline features
         features, y = get_baseline_features(df)
@@ -437,12 +439,12 @@ if __name__ == '__main__':
     #features = [features]
     scores = None
     best_score = None
-    batch_size = [32, 64] # [8,16,32,64]
-    weights_init = [ 'HE_normal', None, 'HE_uniform']
+    batch_size = [32]#, 64] # [8,16,32,64]
+    weights_init = [ 'HE_normal','HE_uniform'] # ,None
     learning_rate = [0.001,]# 0.01, 0.0001]
-    thresholds = [0.5, 0.6, 0.75]
+    thresholds = [0.6,]# 0.5, 0.75]
     human_labelled = [True, False]
-    optimizers = ['sgd','adam', ]
+    optimizers = ['sgd'] #,'adam', ]
 
     for human in tqdm(human_labelled):
         for th in tqdm(thresholds):
