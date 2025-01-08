@@ -1,0 +1,29 @@
+{
+    "llm_config": {
+        "dataset": "deepmind/aqua_rat",
+        "samples": "all",
+        "max_new_tokens": 256,
+        "togetherai": true,
+        "batch_size": 1,
+        "model_hf_key": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "baseline": false,
+        "baseline_model": "BAAI/bge-large-en-v1.5",
+        "exec_kwargs": {},
+        "load_in_8bit": false,
+        "load_in_4bit": false,
+        "device_map": "auto",
+        "read_from_file": false,
+        "filename": "cot_true_with_options_9666_aqua_rag/deepmind-aqua_rat_gpt_4o_balanced_13524_balanced_9666.xlsx",
+        "regression_features_saved": true,
+        "all_hidden_layers": true,
+        "regression_features_path": "cot_true_with_options_9666_aqua_rag/",
+        "regression_labels_path": "cot_true_with_options_9666_aqua_rag/regression_labels.txt",
+        "verbose": false,
+        "class_imbalance": false,
+        "fix_class_imbalance": false,
+        "hidden_layer": -1,
+        "regression_model": "feed forward",
+        "epochs": 5
+
+    }
+}
