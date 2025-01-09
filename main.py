@@ -1,6 +1,6 @@
 from os import mkdir
 from pyexpat import features
-
+#import xlsxwriter
 from pyarrow.dataset import dataset
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForCausalLM, BertModel #, BitsAndBytesConfig
@@ -21,6 +21,8 @@ from os import listdir
 from os.path import isfile, join, split
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
+import warnings
+warnings.filterwarnings('ignore')
 CoT = True
 with_options = True
 print ("Loading .env was: ", load_dotenv())
@@ -51,7 +53,12 @@ def get_ds(ds_name):
         dataset= dataset.rename_column("ground_truth", "answer")
 
         return dataset
-
+    elif ds_name =="olympiad":
+        def fn_numina(sample, _):
+            return {"question": sample["problem"], "answer": sample["solution"]}
+        dataset = load_dataset("AI-MO/NuminaMath-CoT",  split='train')
+        dataset = dataset.filter(lambda example: example['source'].startswith('olympiads'))
+        return dataset.map(fn_numina, dataset, batched=True, remove_columns=["messages", "source", "problem", "solution"])
     elif ds_name == "lighteval/MATH":
         def fn_math(sample, _):
             return {"question": sample["problem"], "answer": sample["solution"]}
@@ -89,12 +96,12 @@ def run_inference(ds_name):
     dataset = get_ds(ds_name)
 
     if llm_config["samples"] != "all":
-        dataset = dataset.select([i for i in range(llm_config["samples"])])
+        dataset = dataset.select([i+27000 for i in range(llm_config["samples"]-27000)])
     #df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_200_labelled.xlsx")
     #index = df['Unnamed: 0'].tolist()
-    #index = [i + 91000 for i in index]
+    #index = [i  for i in range(93000, len(df))]
     #dataset = dataset.select(index)
-    #dataset = dataset.select([i for i in range(93500, 94500)])
+    #dataset = dataset.select([i for i in range(93000, len(df))])
 
 
     if llm_config["togetherai"]:
@@ -102,7 +109,9 @@ def run_inference(ds_name):
     else:
         print ("Running Inference using GPU")
 
-
+    fname = f"{ds_name.replace('/', '-')}.xlsx"
+    fname = os.path.join(get_exec_str(date_time), fname)
+    print (f"Inference Results would be saved to {fname}")
     dummy = list()
     for i in tqdm(range(len(dataset))):
         sample = dataset[i]
@@ -110,7 +119,7 @@ def run_inference(ds_name):
         answer = sample['answer']
 
         gen_answer = generate_answer(question, togetherai=llm_config["togetherai"], tokenizer=tokenizer,
-                                     CoT=CoT, model=None)
+                                     CoT=CoT, model=model, gen_tokens = llm_config["max_new_tokens"])
 
         if llm_config["verbose"]:
             # Display the question and model's chain-of-thought response
@@ -119,12 +128,19 @@ def run_inference(ds_name):
             print(f"Reference Answer:\n{answer}")
 
         dummy.append([question, answer, gen_answer])
+
+        if (len(dummy) % 500) == 0:
+            df = pd.DataFrame(dummy, columns=['Question', 'Reference', 'Prediction'])
+            df["anum_decisions"] = [False] * len(df)
+            df["llm_decisions"] = [False] * len(df)
+
+            df.to_excel(fname, index=False ) #, engine ='xlsxwriter')
+
+
     df = pd.DataFrame(dummy, columns = ['Question', 'Reference', 'Prediction'])
     df["anum_decisions"] = [False] * len(df)
     df["llm_decisions"] = [False] * len(df)
 
-    fname = f"{ds_name.replace('/', '-')}.xlsx"
-    fname = os.path.join(get_exec_str(date_time), fname)
     df.to_excel(fname, index=False)
     print(f"Inference Results without evaluation are saved to {fname}")
 
@@ -137,7 +153,7 @@ def run_inference(ds_name):
     df = drop_nasty_samples(df)
     fname = f"{ds_name.replace('/', '-')}_filtered.xlsx"
     fname = os.path.join(get_exec_str(date_time), fname)
-    df.to_excel(fname, index=False)
+    df.to_excel(fname, index=False) #, engine = 'xlsxwriter')
     print(f"Inference Results (cleaned) with GPT-4o mini evaluation are saved to {fname}")
 
     return df, fname
@@ -210,6 +226,7 @@ def contruct_regression_features(df, date_time, compute_all = False):
     features = None
     for input_ids, attention_mask, last_token_idx in tqdm(zip(input_ids_batches, attention_mask_batches, last_token_indices), total = len(input_ids_batches)):
         with torch.no_grad():
+            input_ids = input_ids.to('cuda')
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         
         hidden_states = outputs.hidden_states
@@ -274,7 +291,7 @@ def drop_nasty_samples(df):
         token = tokenizer(input, return_tensors="pt")
         token = token['input_ids']
         num_tokens = token.shape[1]
-        if num_tokens <= 512 :
+        if num_tokens <= llm_config["max_new_tokens"]:
             good_index.append(i)
     len_before = len(df)
     df = df.iloc[good_index]
@@ -350,18 +367,20 @@ if __name__ == '__main__':
     print (llm_config)
     wandb_init_run(config=llm_config)
 
-
     if llm_config["read_from_file"]:
         df = read_from_file(fname = llm_config["filename"])
         new_file_name = llm_config["filename"]
 
     else:
         # Generate answer
-        if not llm_config["togetherai"]:
+        if llm_config["togetherai"]==False:
             model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto",
                                                      torch_dtype=torch.bfloat16,
                                                      #load_in_4bit=True
                                                           )
+        else:
+            model = None
+
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token_id = tokenizer.eos_token_id
         df, fname = run_inference(llm_config["dataset"])
@@ -370,18 +389,14 @@ if __name__ == '__main__':
     #df = drop_nasty_samples(df)
     if llm_config["fix_class_imbalance"]:
         n_true_label, n_false_label = check_class_imbalance(df)
-        if CoT:
-            samples_per_class = n_false_label
-        else:
-            samples_per_class = n_true_label
-
+        samples_per_class = min(n_false_label, n_true_label)
         df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
 
     if llm_config["samples"] != "all":
         if llm_config["samples"] < len(df):
             df = df.head(n=llm_config["samples"])
 
-    
+
     if llm_config["baseline"]:
         # get baseline features
         features, y = get_baseline_features(df)
@@ -420,17 +435,17 @@ if __name__ == '__main__':
                            "hidden_layer": llm_config["hidden_layer"], "reg-model": llm_config["regression_model"],
                            "batch_size": llm_config["batch_size"], "epochs": llm_config["epochs"],
                            "weights_init": "HE", "CoT": CoT}
-
+    exit()
     # Train the regression model.
     #features = [features]
     scores = None
     best_score = None
-    batch_size = [8,16,32,64]
-    weights_init = [None, 'HE_normal', 'HE_uniform']
-    learning_rate = [0.01, 0.001] #, 0.0001]
-    thresholds = [0.5]#, 0.6, 0.75]
-    human_labelled = [True,]# False]
-    optimizers = ['adam', 'sgd']
+    batch_size = [32]#, 64] # [8,16,32,64]
+    weights_init = [ 'HE_normal','HE_uniform'] # ,None
+    learning_rate = [0.001,]# 0.01, 0.0001]
+    thresholds = [0.6,]# 0.5, 0.75]
+    human_labelled = [True, False]
+    optimizers = ['sgd'] #,'adam', ]
 
     for human in tqdm(human_labelled):
         for th in tqdm(thresholds):
@@ -438,26 +453,22 @@ if __name__ == '__main__':
                 for bs in tqdm(batch_size):
                     for w_init in tqdm(weights_init):
                         for optimizer in tqdm(optimizers):
-                            for i, feature in enumerate(features[:1]):
+                            for i, feature in enumerate(features):
                                 wandb_table["hidden_layer"] = i
                                 wandb_table["batch_size"] = bs
                                 wandb_table["weights_init"] = w_init
                                 wandb_table["learning_rate"] = lr
-                                try:
-                                    if llm_config["regression_model"] == "linear regression":
-                                        accuracy, loss = logistic_regression(feature, y, llm_config )
+                                wandb_table["optimizer"] = optimizer
+                                wandb_table["human_labelled"] = human
+                                wandb_table["threshold"] = th
 
-                                    else:
-                                        accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"],
+                                if llm_config["regression_model"] == "linear regression":
+                                    accuracy, loss = logistic_regression(feature, y, llm_config )
+
+                                else:
+                                    accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"],
                                                                              i = i, batch_size=bs, weights_init=w_init, lr= lr,
                                                                              external_test_set=human, confidence_th=th, optimizer=optimizer)
-
-                                except Exception as e:
-                                    print(e)
-                                    print (wandb_table)
-                                    accuracy = 0
-                                    loss = 0
-
                                 wandb_table["test_accuracy"] = accuracy
                                 if scores is None:
                                     scores = pd.DataFrame.from_dict([wandb_table])
