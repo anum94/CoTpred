@@ -22,6 +22,8 @@ from os.path import isfile, join, split
 from utils.classify_math import get_gpt4_score
 from utils.inference import generate_prompt, generate_cot_prompt, generate_answer
 import warnings
+from utils.misc import device
+print (device)
 warnings.filterwarnings('ignore')
 CoT = True
 with_options = True
@@ -226,7 +228,9 @@ def contruct_regression_features(df, date_time, compute_all = False):
     features = None
     for input_ids, attention_mask, last_token_idx in tqdm(zip(input_ids_batches, attention_mask_batches, last_token_indices), total = len(input_ids_batches)):
         with torch.no_grad():
-            input_ids = input_ids.to('cuda')
+            #model = model.to('cuda:0')
+            input_ids = input_ids.to(device)
+            attention_mask = attention_mask.to(device)
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         
         hidden_states = outputs.hidden_states
@@ -426,6 +430,7 @@ if __name__ == '__main__':
                                                       # load_in_8bit=True
                                                           )
 
+            model = model.to(device)
             tokenizer = AutoTokenizer.from_pretrained(model_name)
             tokenizer.pad_token_id = tokenizer.eos_token_id
             features , y = contruct_regression_features(df, date_time=date_time, compute_all=llm_config["all_hidden_layers"])
