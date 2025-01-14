@@ -33,10 +33,14 @@ print ("Loading .env was: ", load_dotenv())
 def get_exec_str(datestamp) -> str:
 
     ds = llm_config['dataset'].replace("/", "-")
-
-    exec_dir = os.path.join(config.working_dir, "runs", f"{ds}/{datestamp}", f"CoT_{CoT}")
+    print (os.getcwd())
+    exec_dir = os.path.join("/mnt/container/","ToTpred", "runs", f"{ds}/{datestamp}")
+    #exec_dir = os.path.join(config.working_dir, "runs", f"{ds}/{datestamp}", f"CoT_{CoT}")
+    print (exec_dir)
     if not os.path.exists(exec_dir):
         os.makedirs(exec_dir)
+        print (f"Created {exec_dir}")
+        print (os.listdir())
         os.makedirs(os.path.join(exec_dir, "models"))
 
     return exec_dir
@@ -98,7 +102,7 @@ def run_inference(ds_name):
     dataset = get_ds(ds_name)
 
     if llm_config["samples"] != "all":
-        dataset = dataset.select([i+27000 for i in range(llm_config["samples"]-27000)])
+        dataset = dataset.select([i+37000 for i in range(llm_config["samples"]-37000)])
     #df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_200_labelled.xlsx")
     #index = df['Unnamed: 0'].tolist()
     #index = [i  for i in range(93000, len(df))]
@@ -258,6 +262,10 @@ def contruct_regression_features(df, date_time, compute_all = False):
         else:
             #print (feature.size(), last_layer_hidden_state.size())
             features = torch.concat((features,last_token_reps),dim=0)
+    y = pd.to_numeric(df['llm_decisions'])
+    fname = os.path.join(get_exec_str(date_time), "regression_labels.txt")
+    np.savetxt(fname, np.array(y), fmt='%d')
+    print(f"Saved Regression Labels at {fname}")
 
     if compute_all:
         features_temp = []
@@ -265,7 +273,7 @@ def contruct_regression_features(df, date_time, compute_all = False):
         a,b,c = features.size()
         for i in range(b):
             feature = features[:,i,:]
-            feature = feature.float().numpy()
+            feature = feature.cpu().float().numpy()
             fname = os.path.join(get_exec_str(date_time), f"regression_features_layer_{i}.txt")
             np.savetxt(fname, feature, fmt='%.8f')
             print(f"Saved Regression Features at {fname}")
@@ -445,11 +453,11 @@ if __name__ == '__main__':
     #features = [features]
     scores = None
     best_score = None
-    batch_size = [32]#, 64] # [8,16,32,64]
-    weights_init = [ 'HE_normal','HE_uniform'] # ,None
-    learning_rate = [0.001,]# 0.01, 0.0001]
-    thresholds = [0.6,]# 0.5, 0.75]
-    human_labelled = [True, False]
+    batch_size = [64] #, 64] # [8,16,32,64]
+    weights_init = [ 'HE_normal'] #,'HE_uniform'] # ,None
+    learning_rate = [0.001, ] # 0.01, 0.0001]
+    thresholds = [0.5,] # 0.5, 0.75]
+    human_labelled = [ False]
     optimizers = ['sgd'] #,'adam', ]
 
     for human in tqdm(human_labelled):
@@ -473,7 +481,7 @@ if __name__ == '__main__':
                                 else:
                                     accuracy, loss = feedforward_network(feature, y, get_exec_str(date_time), epochs=llm_config["epochs"],
                                                                              i = i, batch_size=bs, weights_init=w_init, lr= lr,
-                                                                             external_test_set=human, confidence_th=th, optimizer=optimizer)
+                                                                             external_test_set=False, confidence_th=th, optimizer=optimizer)
                                 wandb_table["test_accuracy"] = accuracy
                                 if scores is None:
                                     scores = pd.DataFrame.from_dict([wandb_table])
@@ -486,6 +494,6 @@ if __name__ == '__main__':
                                 wandb_push_json(wandb_table, i=i)
                 print(best_score)
     print (best_score)
-    scores.to_excel("hp_optimization_scores.xlsx")
+    scores.to_excel("hp_optimization_scores_cnk12.xlsx")
 
 
