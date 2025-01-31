@@ -1,0 +1,36 @@
+{
+    "llm_config": {
+        "dataset": "olympiad",
+        "samples": "all",
+        "max_new_tokens": 15,
+        "togetherai": true,
+        "batch_size": 1,
+        "model_hf_key": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "baseline": false,
+        "baseline_model": "google-bert/bert-base-uncased",
+        "exec_kwargs": {},
+        "load_in_8bit": false,
+        "load_in_4bit": false,
+        "device_map": "auto",
+        "read_from_file": true,
+        "PoT": false,
+        "filename": "olympiad/T_0/olympiad_train_9996.xlsx",
+        "regression_features_saved": true,
+        "baseline_features_saved": true,
+        "all_hidden_layers": true,
+        "baseline_regression_features_path": "cn-k12-baseline-bert/train/regression_features.txt",
+        "baseline_regression_labels_path": "cn-k12-baseline-bert/train/regression_labels.txt",
+        "regression_features_path": "cn-k12/T_0/T_0_train_features",
+        "regression_labels_path": "cn-k12/T_0/T_0_train_features/regression_labels.txt",
+        "test_filename": "cn-k12/T_0/aslawliet-cn-k12_test_1000_labeled.xlsx",
+        "test_features_path": "cn-k12/T_0/test_features",
+        "baseline_test_features_path": "cn-k12-baseline-bert/test/regression_features.txt",
+        "verbose": false,
+        "class_imbalance": false,
+        "fix_class_imbalance": false,
+        "hidden_layer": -1,
+        "regression_model": "feed forward",
+        "epochs": 5
+
+    }
+}

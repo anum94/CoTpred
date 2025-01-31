@@ -1,0 +1,36 @@
+{
+    "llm_config": {
+        "dataset": "olympiad",
+        "samples": 43000,
+        "max_new_tokens": 512,
+        "togetherai": false,
+        "batch_size": 1,
+        "model_hf_key": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "baseline": false,
+        "baseline_model": "google-bert/bert-base-uncased",
+        "exec_kwargs": {},
+        "load_in_8bit": false,
+        "load_in_4bit": false,
+        "device_map": "auto",
+        "read_from_file": true,
+        "PoT": true,
+        "filename": "/Users/anumafzal/Library/Mobile Documents/com~apple~CloudDocs/PyCharm/olympiad/Pred_over_time/olympiad_train_9996_PoT_99960.xlsx",
+        "regression_features_saved": true,
+        "baseline_features_saved": true,
+        "all_hidden_layers": true,
+        "baseline_regression_features_path": "olympiad/T_0/bert-base-uncased/train_features/regression_features.txt",
+        "baseline_regression_labels_path": "olympiad/T_0/bert-base-uncased/train_features/regression_labels.txt",
+        "regression_features_path": "olympiad/pred_over_time/train_features",
+        "regression_labels_path": "/Users/anumafzal/Library/Mobile Documents/com~apple~CloudDocs/PyCharm/olympiad/Pred_over_time/train_features/regression_labels.txt",
+        "test_filename": "olympiad/pred_over_time/olympiad_test_1000_labeled_PoT_10000.xlsx",
+        "test_features_path": "/Users/anumafzal/Library/Mobile Documents/com~apple~CloudDocs/PyCharm/olympiad/Pred_over_time/test_features/",
+        "baseline_test_features_path": "olympiad/T_0/bert-base-uncased/test_features/regression_features.txt",
+        "verbose": false,
+        "class_imbalance": false,
+        "fix_class_imbalance": false,
+        "hidden_layer": -1,
+        "regression_model": "feed forward",
+        "epochs": 5
+
+    }
+}
