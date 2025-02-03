@@ -53,12 +53,14 @@ def get_ds(ds_name):
         dataset= dataset.rename_column("ground_truth", "answer")
 
         return dataset
+
     elif ds_name =="olympiad":
         def fn_numina(sample, _):
             return {"question": sample["problem"], "answer": sample["solution"]}
         dataset = load_dataset("AI-MO/NuminaMath-CoT",  split='train')
         dataset = dataset.filter(lambda example: example['source'].startswith('olympiads'))
         return dataset.map(fn_numina, dataset, batched=True, remove_columns=["messages", "source", "problem", "solution"])
+
     elif ds_name == "lighteval/MATH":
         def fn_math(sample, _):
             return {"question": sample["problem"], "answer": sample["solution"]}
@@ -66,11 +68,13 @@ def get_ds(ds_name):
         dataset_test = load_dataset("lighteval/MATH", split="test", trust_remote_code=True)
         dataset = concatenate_datasets([dataset_train, dataset_test])
         return dataset.map(fn_math, dataset, batched=True, remove_columns=["type", "level", "problem", "solution"])
+
     elif ds_name == "aslawliet/cn-k12":
         def fn_cnk12(sample, _):
             return {"question": sample["problem"], "answer": sample["solution"]}
         dataset= load_dataset("aslawliet/cn-k12", split="train", trust_remote_code=True)
         return dataset.map(fn_cnk12, dataset, batched=True, remove_columns=[ "problem", "solution"])
+
     elif ds_name == "deepmind/aqua_rat":
         dataset = load_dataset("deepmind/aqua_rat", "tokenized", split='train')
 
@@ -96,7 +100,7 @@ def run_inference(ds_name):
     dataset = get_ds(ds_name)
 
     if llm_config["samples"] != "all":
-        dataset = dataset.select([i+69000 for i in range(llm_config["samples"])])
+        dataset = dataset.select([i for i in range(llm_config["samples"])])
     #df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_200_labelled.xlsx")
     #index = df['Unnamed: 0'].tolist()
     #index = [i  for i in range(93000, len(df))]

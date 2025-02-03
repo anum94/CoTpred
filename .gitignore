@@ -6,4 +6,3 @@ runs/.DS_Store
 /wandb/
 .idea/
 runs/
-cot_true_with_options_9666_aqua_rag/prediction_over_time

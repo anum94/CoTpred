@@ -1,9 +1,9 @@
 {
     "llm_config": {
         "dataset": "olympiad",
-        "samples": 9666,
+        "samples": 1000,
         "max_new_tokens": 512,
-        "togetherai": false,
+        "togetherai": true,
         "batch_size": 1,
         "model_hf_key": "meta-llama/Meta-Llama-3.1-8B-Instruct",
         "baseline": false,
@@ -12,7 +12,7 @@
         "load_in_8bit": false,
         "load_in_4bit": false,
         "device_map": "auto",
-        "read_from_file": true,
+        "read_from_file": false,
         "PoT": false,
         "filename": "olympiad/T_0/olympiad_train_9996.xlsx",
         "regression_features_saved": true,
