@@ -70,13 +70,16 @@ def generate_answer(input, togetherai = True):
 
 
 def interupt_generation(path, steps, n = 100):
-    aqua_df = pd.read_excel(aqua_pot_path, header=0)
-    aqua_df = (aqua_df.loc[aqua_df['t'].isin(steps)]).head(n)
+    df = pd.read_excel(aqua_pot_path, header=0)
+    df = (df.loc[df['t'].isin(steps)]).head(n)
     generations = []
-    for question in tqdm(aqua_df["Question"]):
+    for question in tqdm(df["Question"]):
         generation = generate_answer(question)
         generations.append(generation)
-    aqua_df['interrupted_gen'] = generations
+    df['interrupted_gen'] = generations
+    new_path = os.path.join(os.path.abspath(path), "gen_interupt.xlsx")
+    df.to_excel(new_path)
+
 
 
 aqua_t = (4 , 6)
