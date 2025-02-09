@@ -74,10 +74,11 @@ def interupt_generation(path, steps, n = 100):
     df = (df.loc[df['t'].isin(steps)]).head(n)
     generations = []
     for question in tqdm(df["Question"]):
-        generation = generate_answer(question)
+        generation = generate_answer(question, togetherai=False)
         generations.append(generation)
     df['interrupted_gen'] = generations
     new_path = os.path.join(os.path.abspath(path), "gen_interupt.xlsx")
+    print (new_path)
     df.to_excel(new_path)
 
 
