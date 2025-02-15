@@ -456,12 +456,12 @@ if __name__ == '__main__':
     #features = [features]
     scores = None
     best_score = None
-    batch_size = [32, 64, 128] # [8,16,32,64]
-    weights_init = [ 'HE_uniform' ,None] #'HE_normal',
+    batch_size = [ 32, 128,] # [8,16,32,64]
+    weights_init = [ 'HE_uniform','HE_normal']
     learning_rate = [0.001,]# 0.01, 0.0001]
-    thresholds = [0.5, 0.6,]# 0.6,]# 0.75]
+    thresholds = [0.5]#, 0.6,]# 0.6,]# 0.75]
     human_labelled = [True]#, False]
-    optimizers = ['adam', 'sgd']
+    optimizers = [ 'sgd',] #'adam',
 
     for human in tqdm(human_labelled):
         for th in tqdm(thresholds):
@@ -470,6 +470,8 @@ if __name__ == '__main__':
                     for w_init in tqdm(weights_init):
                         for optimizer in tqdm(optimizers):
                             for i, hidden_layer_path in tqdm(enumerate(regression_feature_paths), total = len(regression_feature_paths)):
+                                if "regression_features_layer_13.txt" not in hidden_layer_path :
+                                    continue
                                 wandb_table["hidden_layer"] = os.path.basename(hidden_layer_path)
                                 wandb_table["batch_size"] = bs
                                 wandb_table["weights_init"] = w_init
@@ -500,6 +502,6 @@ if __name__ == '__main__':
                                 else:
                                     scores = pd.concat([scores,pd.DataFrame.from_records([wandb_table]) ], axis = 0)
                                 wandb_push_json(wandb_table, i=i)
-    scores.to_excel(f"hp_optimization_scores_{llm_config['dataset'].replace('/', '-')}_baseline_{llm_config['baseline']}_PoT_{llm_config['PoT']}.xlsx")
+    #scores.to_excel(f"hp_optimization_scores_{llm_config['dataset'].replace('/', '-')}_baseline_{llm_config['baseline']}_PoT_{llm_config['PoT']}2.xlsx")
 
 

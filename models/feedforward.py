@@ -22,9 +22,11 @@ def feedforward_network(X, y, exec_str,test_features_path,test_label_path, epoch
                         lr = 0.01, external_test_set = False, confidence_th = 0.5, optimizer = "adam", human_annotation=True,
                         baseline=False, PoT = False):
 
+
     best_model_path = os.path.join(exec_str,"models", f'best_model_hs_{str(i)}.keras')
     feature_path = os.path.join(test_features_path,
                                 f"{i}")
+    print (i)
     if baseline:
         feature_path = test_features_path
     X_test = np.loadtxt(feature_path, dtype=float)
@@ -108,7 +110,7 @@ def feedforward_network(X, y, exec_str,test_features_path,test_label_path, epoch
 
         # Evaluate the model
         loss, accuracy = best_model.evaluate(X_test, y_test, verbose=False)
-        #print(f'Test accuracy: {accuracy:.4f}')
+        print(f'Test accuracy: {accuracy:.4f}')
 
         # Get predictions for t = 1,2, 3 .... 10
         t_accuracy = {"accuracy":accuracy}
@@ -121,7 +123,7 @@ def feedforward_network(X, y, exec_str,test_features_path,test_label_path, epoch
 
             t_accuracy[f"T_{t}"] = accuracy
 
-            #compute_metrics(predictions=pred, true_labels=y_test, pred_prob = log_prob)
+            compute_metrics(predictions=pred, true_labels=y_test, pred_prob = log_prob)
     except Exception as e:
         print(e)
         t_accuracy = {'T_0':0, 'accuracy':0}
@@ -133,19 +135,19 @@ def compute_metrics(predictions, true_labels, pred_prob):
 
     # Calculate Precision
     precision = precision_score(true_labels, predictions)
-    #print(f'Precision: {precision}')
+    print(f'Precision: {precision}')
 
     # Calculate Recall
     recall = recall_score(true_labels, predictions)
-    #print(f'Recall: {recall}')
+    print(f'Recall: {recall}')
 
     # Calculate F1 Score
     f1 = f1_score(true_labels, predictions)
-    #print(f'F1 Score: {f1}')
+    print(f'F1 Score: {f1}')
 
     # Calculate Confusion Matrix
     conf_matrix = confusion_matrix(true_labels, predictions)
-    #print(f'Confusion Matrix:\n{conf_matrix}')
+    print(f'Confusion Matrix:\n{conf_matrix}')
 
     # Calculate AUC
     auc = roc_auc_score(true_labels, pred_prob)

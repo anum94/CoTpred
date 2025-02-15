@@ -1,7 +1,7 @@
 {
     "llm_config": {
         "dataset": "olympiad",
-        "samples": 1000,
+        "samples": "all",
         "max_new_tokens": 512,
         "togetherai": true,
         "batch_size": 1,
@@ -12,7 +12,7 @@
         "load_in_8bit": false,
         "load_in_4bit": false,
         "device_map": "auto",
-        "read_from_file": false,
+        "read_from_file": true,
         "PoT": false,
         "filename": "olympiad/T_0/olympiad_train_9996.xlsx",
         "regression_features_saved": true,

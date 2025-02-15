@@ -17,7 +17,7 @@ def generate_prompt(questions):
     if isinstance(questions, str):
         cot_prompts = (f"Generate answer of the given question without any chain of thought prompting. "
                        f"Do not give any reasoning or explanations as a part of the output."
-                    f"Question: {questions} \n Please generate the answer in 2-3 words at max with using any Chain of Thought." )
+                    f"Question: {questions} \n Please generate the answer in 2-3 words at max without using any Chain of Thought." )
     else:
         cot_prompts = [(f"Generate answer of the given question without any chain of thought prompting. Do not give any reasoning or explanations as a part of the output."
                     f"Question: {question} \n Please generate the answer in few words. ") for question in questions]

@@ -9,8 +9,6 @@ def get_coorelation(filename, n = 100):
     print(f" True Labels: {true_label}, False Labels: {false_label}")
     print(f"LLM can generate correct answer for {(true_label / (true_label + false_label)) * 100}% of the samples")
 
-    if len(df) > 100:
-        df = df.head(n)
     print(f"N: {len(df)}")
     agreements = [True if a == b else False for a, b in zip(df['llm_decisions'], df['anum_decisions'])]
     rate  = agreements.count(True) / len (agreements)
@@ -36,8 +34,13 @@ filenames = ["../test_files/lighteval-MATH_final.xlsx",
             "../test_files/aops_forum_final.xlsx",
             "../test_files/aops_forum_filtered_balanced_66_final.xlsx"
             ]
-
+filenames = [
+    "/Users/anumafzal/PycharmProjects/ToTpred/cn-k12/T_0/aslawliet-cn-k12_test_1000_labeled.xlsx",
+    "/Users/anumafzal/PycharmProjects/ToTpred/cot_true_with_options_9666_aqua_rag/t0/test_set/deepmind-aqua_rat_balanced_1000_labelled.xlsx",
+    "/Users/anumafzal/PycharmProjects/ToTpred/olympiad/T_0/olympiad_test_1000_labeled.xlsx"
+]
 for filename in filenames:
+    print (filename)
     get_coorelation(filename)
 '''
 
