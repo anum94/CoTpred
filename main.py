@@ -121,17 +121,19 @@ def run_inference(ds_name):
         sample = dataset[i]
         question = sample['question']
         answer = sample['answer']
+        try:
+            gen_answer = generate_answer(question, togetherai=llm_config["togetherai"], tokenizer=tokenizer,
+                                         CoT=CoT, model=model, gen_tokens = llm_config["max_new_tokens"])
 
-        gen_answer = generate_answer(question, togetherai=llm_config["togetherai"], tokenizer=tokenizer,
-                                     CoT=CoT, model=model, gen_tokens = llm_config["max_new_tokens"])
+            if llm_config["verbose"]:
+                # Display the question and model's chain-of-thought response
+                print(f"Question: {question}")
+                print(f"Model's Answer with Chain of Thought:\n{gen_answer}")
+                print(f"Reference Answer:\n{answer}")
 
-        if llm_config["verbose"]:
-            # Display the question and model's chain-of-thought response
-            print(f"Question: {question}")
-            print(f"Model's Answer with Chain of Thought:\n{gen_answer}")
-            print(f"Reference Answer:\n{answer}")
-
-        dummy.append([question, answer, gen_answer])
+            dummy.append([question, answer, gen_answer])
+        except Exception as e:
+            print (e)
 
         if (len(dummy) % 500) == 0:
             df = pd.DataFrame(dummy, columns=['Question', 'Reference', 'Prediction'])
