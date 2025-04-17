@@ -68,7 +68,7 @@ def generate_answer(question, tokenizer, CoT, togetherai = True, model = None, g
         # Decode the model's output
         answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
         answer = answer.split("Let's think step by step:")[-1]
-        print (answer)
+        #print (answer)
 
     # Extract the final answer after the step-by-step reasoning
     return answer
