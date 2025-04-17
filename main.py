@@ -395,6 +395,7 @@ if __name__ == '__main__':
         new_file_name = fname
 
     #df = drop_nasty_samples(df)
+    exit()
     if llm_config["fix_class_imbalance"]:
         n_true_label, n_false_label = check_class_imbalance(df)
         samples_per_class = min(n_false_label, n_true_label)
