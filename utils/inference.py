@@ -57,7 +57,7 @@ def generate_answer(question, tokenizer, CoT, togetherai = True, model = None, g
         # Generate output from the model (limiting max tokens for efficiency)
         outputs = model.generate(
             **inputs,
-            max_length=512,  # Adjust this to limit the length of the response
+            max_new_tokens=512,  # Adjust this to limit the length of the response
             num_beams=1,  # Beam search to improve output quality
             #early_stopping=True
             temperature = 0,
