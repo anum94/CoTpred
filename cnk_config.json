@@ -1,7 +1,7 @@
 {
     "llm_config": {
         "dataset": "aslawliet/cn-k12",
-        "samples": 10000,
+        "samples": 16000,
         "max_new_tokens": 512,
         "togetherai": false,
         "batch_size": 1,
