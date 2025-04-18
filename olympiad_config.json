@@ -1,7 +1,7 @@
 {
     "llm_config": {
         "dataset": "olympiad",
-        "samples": 100,
+        "samples": 50,
         "max_new_tokens": 512,
         "togetherai": false,
         "batch_size": 1,
