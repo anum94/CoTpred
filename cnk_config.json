@@ -27,7 +27,7 @@
         "baseline_test_features_path": "cn-k12/T_0/cn-k12-baseline-bert/test/regression_features.txt",
         "verbose": false,
         "class_imbalance": false,
-        "fix_class_imbalance": false,
+        "fix_class_imbalance": true,
         "hidden_layer": -1,
         "regression_model": "feed forward",
         "epochs": 5
