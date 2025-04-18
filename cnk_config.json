@@ -5,7 +5,7 @@
         "max_new_tokens": 512,
         "togetherai": false,
         "batch_size": 1,
-        "model_hf_key": "mistralai/Mistral-7B-Instruct-v0.3\"",
+        "model_hf_key": "mistralai/Mistral-7B-Instruct-v0.3",
         "baseline": false,
         "baseline_model": "google-bert/bert-base-uncased",
         "exec_kwargs": {},
