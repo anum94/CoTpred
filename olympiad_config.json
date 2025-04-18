@@ -1,7 +1,7 @@
 {
     "llm_config": {
         "dataset": "olympiad",
-        "samples": 1000,
+        "samples": 100,
         "max_new_tokens": 512,
         "togetherai": false,
         "batch_size": 1,
@@ -27,7 +27,7 @@
         "baseline_test_features_path": "olympiad/T_0/bert-base-uncased/test_features/regression_features.txt",
         "verbose": false,
         "class_imbalance": false,
-        "fix_class_imbalance": false,
+        "fix_class_imbalance": true,
         "hidden_layer": -1,
         "regression_model": "feed forward",
         "epochs": 4
