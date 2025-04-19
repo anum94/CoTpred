@@ -103,7 +103,7 @@ def run_inference(ds_name):
         dataset = dataset.select([i for i in range(llm_config["samples"])])
     #df = pd.read_excel("runs/processed_ds/deepmind-aqua_rat/test_set/balanced_1044_6k_200_labelled.xlsx")
     #index = df['Unnamed: 0'].tolist()
-    index = [i  for i in range(16000, len(dataset))]
+    index = [i  for i in range(25000, len(dataset))]
     dataset = dataset.select(index)
     #dataset = dataset.select([i for i in range(93000, len(df))])
 
