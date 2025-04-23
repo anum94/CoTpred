@@ -402,7 +402,7 @@ if __name__ == '__main__':
         n_true_label, n_false_label = check_class_imbalance(df)
         samples_per_class = min(n_false_label, n_true_label)
         df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
-    exit()
+
     if llm_config["samples"] != "all":
         if llm_config["samples"] < len(df):
             df = df.head(n=llm_config["samples"])
@@ -454,17 +454,16 @@ if __name__ == '__main__':
         test_features_path = llm_config["test_features_path"]
 
     # Train the regression model.
-
     test_label_path = llm_config["test_filename"]
     #features = [features]
     scores = None
     best_score = None
-    batch_size = [ 32, 128,] # [8,16,32,64]
+    batch_size = [8,16,32,64]
     weights_init = [ 'HE_uniform','HE_normal']
-    learning_rate = [0.001,]# 0.01, 0.0001]
-    thresholds = [0.5]#, 0.6,]# 0.6,]# 0.75]
-    human_labelled = [True]#, False]
-    optimizers = [ 'sgd',] #'adam',
+    learning_rate = [0.001, 0.01, 0.0001]
+    thresholds = [0.5, 0.6,]# 0.6,]# 0.75]
+    human_labelled = [False]
+    optimizers = [ 'sgd','adam',]
 
     for human in tqdm(human_labelled):
         for th in tqdm(thresholds):
@@ -473,8 +472,7 @@ if __name__ == '__main__':
                     for w_init in tqdm(weights_init):
                         for optimizer in tqdm(optimizers):
                             for i, hidden_layer_path in tqdm(enumerate(regression_feature_paths), total = len(regression_feature_paths)):
-                                if "regression_features_layer_13.txt" not in hidden_layer_path :
-                                    continue
+
                                 wandb_table["hidden_layer"] = os.path.basename(hidden_layer_path)
                                 wandb_table["batch_size"] = bs
                                 wandb_table["weights_init"] = w_init
@@ -484,7 +482,7 @@ if __name__ == '__main__':
                                 wandb_table["threshold"] = th
 
 
-                                feature, y = read_regression_features(hidden_layer_path, llm_config["regression_labels_path"])
+                                feature, y = read_regression_features(hidden_layer_path, llm_config["baseline_regression_labels_path"])
                                 if llm_config["regression_model"] == "linear regression":
                                     accuracy, loss = logistic_regression(feature, y, llm_config )
 
@@ -505,6 +503,7 @@ if __name__ == '__main__':
                                 else:
                                     scores = pd.concat([scores,pd.DataFrame.from_records([wandb_table]) ], axis = 0)
                                 wandb_push_json(wandb_table, i=i)
-    #scores.to_excel(f"hp_optimization_scores_{llm_config['dataset'].replace('/', '-')}_baseline_{llm_config['baseline']}_PoT_{llm_config['PoT']}2.xlsx")
+    fname = os.path.join("mistral", f"hp_optimization_scores_{llm_config['dataset'].replace('/', '-')}_baseline_{llm_config['baseline']}_PoT_{llm_config['PoT']}.xlsx")
+    scores.to_excel(fname)
 
 

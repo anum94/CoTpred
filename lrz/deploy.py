@@ -24,6 +24,9 @@ def config_parser() -> argparse.Namespace:
     parser.add_argument(
         "--max_time", type=int, help="Maximum time for execution in minutes", default=60
     )
+    parser.add_argument(
+        "--config", type=str, help="Path to config file", default="config.json"
+    )
 
     return parser.parse_args()
 
@@ -37,7 +40,7 @@ def get_exec_str(args) -> str:
 
 if __name__ == "__main__":
     parser = config_parser()
-    exec_config_path = "config.json"
+    exec_config_path = parser.config
 
     # read run config for folder name
     with open(exec_config_path, "r") as j:
@@ -51,7 +54,7 @@ if __name__ == "__main__":
     if not os.path.exists(aug_exec_path):
         os.makedirs(aug_exec_path)
 
-    config_path = os.path.join(aug_exec_path, "config.json")
+    config_path = os.path.join(aug_exec_path, exec_config_path)
     with open(config_path, "w") as fp:
         json.dump(obj=exec_config, fp=fp)
 
