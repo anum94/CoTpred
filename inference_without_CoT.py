@@ -188,9 +188,9 @@ if __name__ == '__main__':
     if llm_config["samples"] != "all":
         if llm_config["samples"] < len(df):
             df = df.head(n=llm_config["samples"])
-    n_true_label, n_false_label = check_class_imbalance(df)
-    samples_per_class = min(n_false_label, n_true_label)
-    df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
+    #n_true_label, n_false_label = check_class_imbalance(df)
+    #samples_per_class = min(n_false_label, n_true_label)
+    #df = get_balanced_ds(df, samples_per_class=samples_per_class, fname=new_file_name)
 
 
 
