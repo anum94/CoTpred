@@ -1,12 +1,12 @@
 {
     "llm_config": {
         "dataset": "aslawliet/cn-k12",
-        "samples": "all",
+        "samples": 10,
         "max_new_tokens": 512,
         "togetherai": false,
         "batch_size": 1,
         "model_hf_key": "mistralai/Mistral-7B-Instruct-v0.3",
-        "baseline": true,
+        "baseline": false,
         "baseline_model": "google-bert/bert-base-uncased",
         "exec_kwargs": {},
         "load_in_8bit": false,

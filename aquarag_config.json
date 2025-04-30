@@ -1,7 +1,7 @@
 {
     "llm_config": {
         "dataset": "deepmind/aqua_rat",
-        "samples": 24000,
+        "samples": 10,
         "max_new_tokens": 512,
         "togetherai": false,
         "batch_size": 1,
@@ -14,7 +14,7 @@
         "load_in_4bit": false,
         "device_map": "auto",
         "read_from_file": false,
-        "filename": "cot_true_with_options_9666_aqua_rag/t0/deepmind-aqua_rat_gpt_4o_balanced_13524_balanced_9666.xlsx",
+        "filename": "mistral/deepmind-aqua_rat/final/T_0/aqua_rat_train_10000.xlsx",
         "regression_features_saved": true,
         "all_hidden_layers": true,
         "baseline_features_saved": true,
