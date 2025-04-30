@@ -79,7 +79,7 @@ if __name__ == "__main__":
         sbatch_file.write(f"#SBATCH --time={parser.max_time}\n\n")
 
 
-        srun_command = f"srun --container-image ~/demo.sqsh --container-mounts={og_path_container}:/mnt/container torchrun --nproc_per_node={parser.num_gpus} --standalone ~/ToTpred/main.py --config ~/ToTpred/{config_path}"
+        srun_command = f"srun --container-image ~/demo.sqsh --container-mounts={og_path_container}:/mnt/container torchrun --nproc_per_node={parser.num_gpus} --standalone ~/temp/ToTpred/main.py --config ~/temp/ToTpred/{config_path}"
 
         sbatch_file.write(f"{srun_command}\n")
 
