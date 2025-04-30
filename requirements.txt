@@ -16,3 +16,4 @@ tf-keras
 pandas
 together
 torch
+sentencepiece

@@ -153,13 +153,13 @@ def compare_with_without_cot(df):
     cot_true_no_cot_true_index = df.index[(df['llm_decisions'] == 1) & (df['llm_decisions_wo_CoT'] == 1)].tolist()
     cot_false_no_cot_false_index = df.index[(df['llm_decisions'] == 0) & (df['llm_decisions_wo_CoT'] == 0)].tolist()
 
-    print(f"Both pred correct:  {len(cot_true_no_cot_true_index)}",
+    print(f"Both can solve:  {len(cot_true_no_cot_true_index)}",
           f" ({len(cot_true_no_cot_true_index) * 100 / len(df)}%)")
-    analysis_log.append(f"Both pred correct:  {len(cot_true_no_cot_true_index)}"
+    analysis_log.append(f"Both can solve:  {len(cot_true_no_cot_true_index)}"
           f"{len(cot_true_no_cot_true_index) * 100 / len(df)}%)")
-    print(f"both pred wrong:  {len(cot_false_no_cot_false_index)}"
+    print(f"both cannot solve:  {len(cot_false_no_cot_false_index)}"
           f" ({len(cot_false_no_cot_false_index) * 100 / len(df)})%")
-    analysis_log.append(f"both pred wrong:  {len(cot_false_no_cot_false_index)}"
+    analysis_log.append(f" Both cannot solve:  {len(cot_false_no_cot_false_index)}"
           f" ({len(cot_false_no_cot_false_index) * 100 / len(df)})%")
 
     cot_true_no_cot_false_index = df.index[(df['llm_decisions'] == 1) & (df['llm_decisions_wo_CoT'] == 0)].tolist()
