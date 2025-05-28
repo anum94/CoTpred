@@ -1,0 +1,36 @@
+{
+    "llm_config": {
+        "dataset": "deepmind/aqua_rat",
+        "samples": "all",
+        "max_new_tokens": 512,
+        "togetherai": false,
+        "batch_size": 1,
+        "model_hf_key": "mistralai/Mistral-7B-Instruct-v0.3",
+        "baseline": false,
+        "baseline_model": "google-bert/bert-base-uncased",
+        "exec_kwargs": {},
+        "PoT": false,
+        "load_in_8bit": false,
+        "load_in_4bit": false,
+        "device_map": "auto",
+        "read_from_file": false,
+        "filename": "mistral/deepmind-aqua_rat/final/T_0/aqua_rat_train_10000.xlsx",
+        "regression_features_saved": true,
+        "all_hidden_layers": true,
+        "baseline_features_saved": true,
+        "baseline_regression_features_path": "cot_true_with_options_9666_aqua_rag/t0/baseline/train/regression_features.txt",
+        "baseline_regression_labels_path": "cot_true_with_options_9666_aqua_rag/t0/baseline/train/regression_labels.txt",
+        "regression_features_path": "cot_true_with_options_9666_aqua_rag/t0/train_features",
+        "regression_labels_path": "cot_true_with_options_9666_aqua_rag/t0/train_features/regression_labels.txt",
+        "test_filename": "cot_true_with_options_9666_aqua_rag/t0/test_set/deepmind-aqua_rat_balanced_1000_labelled.xlsx",
+        "test_features_path": "cot_true_with_options_9666_aqua_rag/t0/test_set/test_features_1000",
+        "baseline_test_features_path": "cot_true_with_options_9666_aqua_rag/t0/baseline/test/regression_features.txt",
+        "verbose": false,
+        "class_imbalance": false,
+        "fix_class_imbalance": true,
+        "hidden_layer": -1,
+        "regression_model": "feed forward",
+        "epochs": 5
+
+    }
+}

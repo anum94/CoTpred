@@ -61,8 +61,8 @@ print(final_df.groupby(['t']).size())
 '''
 
 print ("Olympiad Dataset")
-input_file = "../olympiad/T_0/olympiad_train_9996.xlsx"
-input_file = "../olympiad/T_0/olympiad_test_1000_labeled.xlsx"
+input_file = "../datasets/llama/olympiad/T_0/olympiad_train_9996.xlsx"
+input_file = "../datasets/llama/olympiad/T_0/olympiad_test_1000_labeled.xlsx"
 df = pd.read_excel(input_file)
 per_sample_pots = []
 for question, reference, prediction, llm_label, human_label in tqdm(zip(df['Question'], df['Reference'], df['Prediction'],
@@ -71,8 +71,8 @@ for question, reference, prediction, llm_label, human_label in tqdm(zip(df['Ques
     per_sample_pots.append(per_sample_pot)
 
 final_df = pd.concat(per_sample_pots)
-output_file = f"../olympiad/Pred_over_time/olympiad_train_9996_PoT_{len(final_df)}.xlsx"
-output_file = f"../olympiad/Pred_over_time/olympiad_test_1000_labeled_PoT_{len(final_df)}.xlsx"
+output_file = f"../datasets/llama/olympiad/Pred_over_time/olympiad_train_9996_PoT_{len(final_df)}.xlsx"
+output_file = f"../datasets/llama/olympiad/Pred_over_time/olympiad_test_1000_labeled_PoT_{len(final_df)}.xlsx"
 final_df.to_excel(output_file, index = False)
 print (len(final_df))
 print(final_df.groupby(['t']).size())

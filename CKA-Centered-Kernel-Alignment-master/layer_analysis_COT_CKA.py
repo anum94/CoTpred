@@ -59,16 +59,16 @@ def layer_wise_similarity(regression_path, regression_path_CoT, regression_label
     similarity_score = dict(sorted(similarity_score.items(), key=lambda item: item[1]))
     return similarity_score
 
-cnk_regression_path = "../cn-k12/T_0/CoT_False/subset_1000/"
-cnk_regression_path_CoT = "../cn-k12/T_0/T_0_train_features"
+cnk_regression_path = "../datasets/llama/cn-k12/T_0/CoT_False/subset_1000/"
+cnk_regression_path_CoT = "../datasets/llama/cn-k12/T_0/T_0_train_features"
 cnk_regression_label = "../cn-k12/T_0/CoT_False/subset_1000/regression_labels.txt"
 cnk_regression_label_CoT = "../cn-k12/T_0/T_0_train_features/regression_labels.txt"
 #my_LDA("Cn-k12",cnk_regression_path, cnk_regression_path_CoT, cnk_regression_label, cnk_regression_label_CoT)
 cnk_scores = layer_wise_similarity(cnk_regression_path, cnk_regression_path_CoT,cnk_regression_label, cnk_regression_label_CoT)
 print (cnk_scores)
 
-aqua_regression_path = "../cot_true_with_options_9666_aqua_rag/t0/CoT_False/subset_1000"
-aqua_regression_path_CoT = "../cot_true_with_options_9666_aqua_rag/t0/train_features"
+aqua_regression_path = "../datasets/llama/cot_true_with_options_9666_aqua_rag/t0/CoT_False/subset_1000"
+aqua_regression_path_CoT = "../datasets/llama/cot_true_with_options_9666_aqua_rag/t0/train_features"
 aqua_regression_label = "../cot_true_with_options_9666_aqua_rag/t0/CoT_False/subset_1000/regression_labels.txt"
 aqua_regression_label_CoT = "../cot_true_with_options_9666_aqua_rag/t0/train_features/regression_labels.txt"
 #my_LDA("AQuA",aqua_regression_path, aqua_regression_path_CoT, aqua_regression_label, aqua_regression_label_CoT)
@@ -76,8 +76,8 @@ aqua_regression_label_CoT = "../cot_true_with_options_9666_aqua_rag/t0/train_fea
 aqua_scores = layer_wise_similarity(aqua_regression_path, aqua_regression_path_CoT, aqua_regression_label, aqua_regression_label_CoT)
 print(aqua_scores)
 
-olympiad_regression_path = "../olympiad/T_0/CoT_False/subset_1000"
-olympiad_regression_path_CoT = "../olympiad/T_0/train_features"
+olympiad_regression_path = "../datasets/llama/olympiad/T_0/CoT_False/subset_1000"
+olympiad_regression_path_CoT = "../datasets/llama/olympiad/T_0/train_features"
 olympiad_regression_label = "../olympiad/T_0/CoT_False/subset_1000/regression_labels.txt"
 olympiad_regression_label_CoT = "../olympiad/T_0/train_features/regression_labels.txt"
 #my_LDA("Olympiad",olympiad_regression_path, olympiad_regression_path_CoT, olympiad_regression_label, olympiad_regression_label_CoT)

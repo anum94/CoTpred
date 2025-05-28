@@ -503,7 +503,7 @@ if __name__ == '__main__':
                                 else:
                                     scores = pd.concat([scores,pd.DataFrame.from_records([wandb_table]) ], axis = 0)
                                 wandb_push_json(wandb_table, i=i)
-    fname = os.path.join("mistral", f"hp_optimization_scores_{llm_config['dataset'].replace('/', '-')}_baseline_{llm_config['baseline']}_PoT_{llm_config['PoT']}.xlsx")
+    fname = os.path.join("datasets/mistral", f"hp_optimization_scores_{llm_config['dataset'].replace('/', '-')}_baseline_{llm_config['baseline']}_PoT_{llm_config['PoT']}.xlsx")
     scores.to_excel(fname)
 
 
