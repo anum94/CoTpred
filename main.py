@@ -376,7 +376,7 @@ if __name__ == '__main__':
     model_name = llm_config["model_hf_key"]
     print(f"Starting Script with config: {llm_config}")
     print (llm_config)
-    wandb_init_run(config=llm_config)
+    #wandb_init_run(config=llm_config)
 
     if llm_config["read_from_file"]:
         df = read_from_file(fname = llm_config["filename"])
@@ -502,7 +502,7 @@ if __name__ == '__main__':
                                     scores = pd.DataFrame.from_dict([wandb_table])
                                 else:
                                     scores = pd.concat([scores,pd.DataFrame.from_records([wandb_table]) ], axis = 0)
-                                wandb_push_json(wandb_table, i=i)
+                                #wandb_push_json(wandb_table, i=i)
     fname = os.path.join("datasets/mistral", f"hp_optimization_scores_{llm_config['dataset'].replace('/', '-')}_baseline_{llm_config['baseline']}_PoT_{llm_config['PoT']}.xlsx")
     scores.to_excel(fname)
 

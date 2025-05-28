@@ -6,3 +6,4 @@ runs/.DS_Store
 /wandb/
 .idea/
 runs/
+hp_optimization
